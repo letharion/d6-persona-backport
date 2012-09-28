@@ -31,6 +31,7 @@
             assertion: assertion
           },
           success: function(res, status, xhr) {
+            console.log(res);
             window.location.reload();
           },
           error: function(res, status, xhr) {

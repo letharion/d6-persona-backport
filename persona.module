@@ -65,20 +65,24 @@ function persona_verify() {
   if (!$assertion) {
     drupal_exit();
   }
+  // Verify the assertion via the persona API.
   $result = drupal_http_request("https://verifier.login.persona.org/verify", array(
       "method" => "POST",
       'headers' => array('Content-Type' => 'application/x-www-form-urlencoded'),
       "data" => "assertion=$assertion&audience=$base_url",
           ));
+  if ($result->code !== "200") {
+    drupal_exit();
+  }
   $response = (object) drupal_json_decode($result->data);
+  // Response should have a status of "okay".
   if ($response->status !== 'okay') {
     drupal_exit();
   }
   // Check to see if this user already exists.
-  $u = user_load_by_mail($response->email);
-  if (!$u) {
+  $account = user_load_by_mail($response->email);
+  if (empty($account)) {
     // Need to create an account for this user.
-    //set up the user fields
     $fields = array(
         'name' => $response->email,
         'mail' => $response->email,
@@ -89,8 +93,9 @@ function persona_verify() {
             DRUPAL_AUTHENTICATED_RID => 'authenticated user',
         ),
     );
-    $u = user_save(NULL, $fields);
+    $account = user_save(array(), $fields);
   }
-  user_login_submit(NULL, $form_state['uid'] = $u->uid);
+  // Login the user.
+  user_login_submit(array(), $form_state['uid'] = $account->uid);
   drupal_exit();
 }
