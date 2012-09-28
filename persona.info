@@ -1,6 +1,6 @@
-name = Mozilla Persona
+name = Persona
 description = Adds Mozilla Persona functionality to the standard user login form
-configure=admin/config/persona
+configure=admin/config/people/persona
 core = 7.x
 
 files[] = persona.admin.inc

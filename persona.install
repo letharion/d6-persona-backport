@@ -10,10 +10,11 @@
 function persona_install() {
   // Login form settings.
   variable_set('persona_login_display', TRUE);
+  variable_set('persona_login_block_display', TRUE);
   variable_set('persona_login_button_style', '');
-  variable_set('persona_login_button_text', "Log in using Persona");
+  variable_set('persona_login_button_text', "Log in with your Email");
   // Reg form settings.
   variable_set('persona_register_display', TRUE);
   variable_set('persona_register_button_style', '');
-  variable_set('persona_register_button_text', "Register using Persona");
+  variable_set('persona_register_button_text', "Register with your Email");
 }

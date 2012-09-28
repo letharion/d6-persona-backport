@@ -9,6 +9,8 @@
  */
 function persona_admin_form($form, &$form_state) {
   $form = array();
+
+  // Login form settings.
   $form['login_settings'] = array(
     '#type' => 'fieldset',
     '#title' => t('Persona Login Form Settings'),
@@ -18,6 +20,11 @@ function persona_admin_form($form, &$form_state) {
     '#type' => 'checkbox',
     '#title' => t('Display on login form'),
     '#default_value' => variable_get('persona_login_display'),
+  );
+  $form['login_settings']['persona_login_block_display'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Display on login block'),
+    '#default_value' => variable_get('persona_login_block_display'),
   );
   $form['login_settings']['login_customize'] = array(
     '#type' => 'item',
@@ -45,10 +52,7 @@ function persona_admin_form($form, &$form_state) {
     '#markup' => persona_link(),
   );
 
-
-
-
-
+  // Registration form settings.
   $form['register_settings'] = array(
     '#type' => 'fieldset',
     '#title' => t('Persona Registration Form Settings'),
@@ -80,9 +84,19 @@ function persona_admin_form($form, &$form_state) {
     '#title' => t('Button text'),
     '#default_value' => variable_get('persona_register_button_text'),
   );
-
   $form['register_settings']['register_customize']['person_button_preview'] = array(
     '#markup' => persona_link('register'),
   );
+
   return system_settings_form($form);
+}
+
+function persona_admin_form_validate($form, &$form_state) {
+  $v = $form_state['values'];
+  if (empty($v['persona_login_button_text'])) {
+    form_set_error('persona_login_button_text', t("Please enter some text for your login button"));
+  }
+  if (empty($v['persona_register_button_text'])) {
+    form_set_error('persona_register_button_text', t("Please enter some text for your register button"));
+  }
 }

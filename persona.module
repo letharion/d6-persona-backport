@@ -42,23 +42,23 @@ function persona_preprocess_page(&$vars) {
 function persona_form_alter(&$form, &$form_state, $form_id) {
   switch ($form_id) {
     case "user_login":
-      $persona_link = array(
-        '#markup' => l(t('Login using Persona'), 'persona/login', array('attributes' => array('class' => array('persona-login')))),
-      );
-      $form['persona'] = $persona_link;
+      if (!variable_get('persona_login_display')) {
+        break;
+      }
+      $form['persona']['#markup'] = persona_link();
       break;
     case "user_login_block":
-      $items = array();
-      if (variable_get('user_register', USER_REGISTER_VISITORS_ADMINISTRATIVE_APPROVAL)) {
-        $items[] = l(t('Create new account'), 'user/register', array('attributes' => array('title' => t('Create a new user account.'))));
+      if (!variable_get('persona_login_block_display')) {
+        break;
       }
-      $items[] = l(t('Request new password'), 'user/password', array('attributes' => array('title' => t('Request new password via e-mail.'))));
-      $items[] = l(t('Login using Persona'), 'persona/login', array('attributes' => array('class' => array('persona-login'))));
-      $form['links'] = array('#markup' => theme('item_list', array('items' => $items)));
+      $form['persona']['#markup'] = persona_link();
       break;
     case "user_register_form":
+      if (!variable_get('persona_register_display')) {
+        break;
+      }
       $persona_link = array(
-        '#markup' => l(t('Create account using Persona'), 'persona/login', array('attributes' => array('class' => array('persona-login')))),
+        '#markup' => persona_link('register'),
       );
       $form['account']['persona'] = $persona_link;
       break;
@@ -125,7 +125,7 @@ function persona_link($type = 'login') {
       $classes .= "persona-button ";
       break;
     case "orange":
-      $classes.= "orange ";
+      $classes .= "orange ";
       $classes .= "persona-button ";
       break;
   }

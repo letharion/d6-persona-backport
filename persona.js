@@ -26,7 +26,7 @@
   Drupal.persona.adminFormEnhance = function(){
     if($('#persona-admin-form').length < 1){
       // Not on the admin form.
-      return FALSE;
+      return false;
     }
     var login_button = $('#edit-login-customize .persona-login');
     var reg_button = $('#edit-register-customize .persona-login');
