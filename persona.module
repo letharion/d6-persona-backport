@@ -1,7 +1,7 @@
 <?php
 /**
  * @file
- * persona.module
+ *   persona.module
  */
 
 /**
@@ -9,9 +9,18 @@
  */
 function persona_menu() {
   $items['persona/verify'] = array(
-      'type' => MENU_CALLBACK,
-      'page callback' => 'persona_verify',
-      'access callback' => TRUE,
+    'type' => MENU_CALLBACK,
+    'page callback' => 'persona_verify',
+    'access callback' => TRUE,
+  );
+  $items['admin/config/people/persona'] = array(
+    'title' => 'Persona Settings',
+    'type' => MENU_NORMAL_ITEM,
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('persona_admin_form'),
+    'description' => 'Configure settings for Mozilla Persona.',
+    'file' => 'persona.admin.inc',
+    'access arguments' => array('administer site configuration'),
   );
   return $items;
 }
@@ -34,7 +43,7 @@ function persona_form_alter(&$form, &$form_state, $form_id) {
   switch ($form_id) {
     case "user_login":
       $persona_link = array(
-          '#markup' => l(t('Login using Persona'), 'persona/login', array('attributes' => array('class' => array('persona-login')))),
+        '#markup' => l(t('Login using Persona'), 'persona/login', array('attributes' => array('class' => array('persona-login')))),
       );
       $form['persona'] = $persona_link;
       break;
@@ -49,7 +58,7 @@ function persona_form_alter(&$form, &$form_state, $form_id) {
       break;
     case "user_register_form":
       $persona_link = array(
-          '#markup' => l(t('Create account using Persona'), 'persona/login', array('attributes' => array('class' => array('persona-login')))),
+        '#markup' => l(t('Create account using Persona'), 'persona/login', array('attributes' => array('class' => array('persona-login')))),
       );
       $form['account']['persona'] = $persona_link;
       break;
@@ -67,10 +76,10 @@ function persona_verify() {
   }
   // Verify the assertion via the persona API.
   $result = drupal_http_request("https://verifier.login.persona.org/verify", array(
-      "method" => "POST",
-      'headers' => array('Content-Type' => 'application/x-www-form-urlencoded'),
-      "data" => "assertion=$assertion&audience=$base_url",
-          ));
+    "method" => "POST",
+    'headers' => array('Content-Type' => 'application/x-www-form-urlencoded'),
+    "data" => "assertion=$assertion&audience=$base_url",
+    ));
   if ($result->code !== "200") {
     drupal_exit();
   }
@@ -84,18 +93,41 @@ function persona_verify() {
   if (empty($account)) {
     // Need to create an account for this user.
     $fields = array(
-        'name' => $response->email,
-        'mail' => $response->email,
-        'pass' => sha1($assertion),
-        'status' => 1,
-        'init' => 'email address',
-        'roles' => array(
-            DRUPAL_AUTHENTICATED_RID => 'authenticated user',
-        ),
+      'name' => $response->email,
+      'mail' => $response->email,
+      'pass' => sha1($assertion),
+      'status' => 1,
+      'init' => 'email address',
+      'roles' => array(
+        DRUPAL_AUTHENTICATED_RID => 'authenticated user',
+      ),
     );
     $account = user_save(array(), $fields);
   }
   // Login the user.
   user_login_submit(array(), $form_state['uid'] = $account->uid);
   drupal_exit();
+}
+
+/**
+ * Returns a Persona login or registration link.
+ * @param $type
+ *   Should be 'login' or 'register'.
+ */
+function persona_link($type = 'login') {
+  $classes = "persona-login ";
+  switch (variable_get("persona_{$type}_button_style")) {
+    case "dark":
+      $classes .= "dark ";
+      $classes .= "persona-button ";
+      break;
+    case "blue":
+      $classes .= "persona-button ";
+      break;
+    case "orange":
+      $classes.= "orange ";
+      $classes .= "persona-button ";
+      break;
+  }
+  return '<a href="#" class="' . $classes . '"><span>' . variable_get("persona_{$type}_button_text") . '</span></a>';
 }

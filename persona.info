@@ -1,6 +1,10 @@
 name = Mozilla Persona
 description = Adds Mozilla Persona functionality to the standard user login form
+configure=admin/config/persona
 core = 7.x
 
+files[] = persona.admin.inc
 files[] = persona.module
 scripts[] = persona.js
+
+stylesheets[all][] = persona-buttons.css

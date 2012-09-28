@@ -1,0 +1,19 @@
+<?php
+/**
+ * @file
+ *   Installs the nescessary variables.
+ */
+
+/**
+ * Implements hook_install().
+ */
+function persona_install() {
+  // Login form settings.
+  variable_set('persona_login_display', TRUE);
+  variable_set('persona_login_button_style', '');
+  variable_set('persona_login_button_text', "Log in using Persona");
+  // Reg form settings.
+  variable_set('persona_register_display', TRUE);
+  variable_set('persona_register_button_style', '');
+  variable_set('persona_register_button_text', "Register using Persona");
+}
