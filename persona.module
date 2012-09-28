@@ -1,0 +1,96 @@
+<?php
+/**
+ * @file
+ * persona.module
+ */
+
+/**
+ * Implements hook_menu().
+ */
+function persona_menu() {
+  $items['persona/verify'] = array(
+      'type' => MENU_CALLBACK,
+      'page callback' => 'persona_verify',
+      'access callback' => TRUE,
+  );
+  return $items;
+}
+
+/**
+ * Implements hook_preprocess_page().
+ * Add the Mozilla Persona js to the page.
+ */
+function persona_preprocess_page(&$vars) {
+  global $user;
+  $user_mail = (!$user->uid) ? NULL : $user->mail;
+  drupal_add_js("https://login.persona.org/include.js", "external");
+  drupal_add_js(array('persona' => array('user' => array('mail' => $user_mail))), "setting");
+}
+
+/**
+ * Implements hook_form_alter().
+ */
+function persona_form_alter(&$form, &$form_state, $form_id) {
+  switch ($form_id) {
+    case "user_login":
+      $persona_link = array(
+          '#markup' => l(t('Login using Persona'), 'persona/login', array('attributes' => array('class' => array('persona-login')))),
+      );
+      $form['persona'] = $persona_link;
+      break;
+    case "user_login_block":
+      $items = array();
+      if (variable_get('user_register', USER_REGISTER_VISITORS_ADMINISTRATIVE_APPROVAL)) {
+        $items[] = l(t('Create new account'), 'user/register', array('attributes' => array('title' => t('Create a new user account.'))));
+      }
+      $items[] = l(t('Request new password'), 'user/password', array('attributes' => array('title' => t('Request new password via e-mail.'))));
+      $items[] = l(t('Login using Persona'), 'persona/login', array('attributes' => array('class' => array('persona-login'))));
+      $form['links'] = array('#markup' => theme('item_list', array('items' => $items)));
+      break;
+    case "user_register_form":
+      $persona_link = array(
+          '#markup' => l(t('Create account using Persona'), 'persona/login', array('attributes' => array('class' => array('persona-login')))),
+      );
+      $form['account']['persona'] = $persona_link;
+      break;
+  }
+}
+
+/**
+ * Callback function to validate the persona assertion.
+ */
+function persona_verify() {
+  global $base_url;
+  $assertion = check_plain($_POST['assertion']);
+  if (!$assertion) {
+    drupal_exit();
+  }
+  $result = drupal_http_request("https://verifier.login.persona.org/verify", array(
+      "method" => "POST",
+      'headers' => array('Content-Type' => 'application/x-www-form-urlencoded'),
+      "data" => "assertion=$assertion&audience=$base_url",
+          ));
+  $response = (object) drupal_json_decode($result->data);
+  if ($response->status !== 'okay') {
+    drupal_exit();
+  }
+  // Check to see if this user already exists.
+  $u = user_load_by_mail($response->email);
+  if (!$u) {
+    // Need to create an account for this user.
+    //set up the user fields
+    $fields = array(
+        'name' => $response->email,
+        'mail' => $response->email,
+        'pass' => sha1($assertion),
+        'status' => 1,
+        'init' => 'email address',
+        'roles' => array(
+            DRUPAL_AUTHENTICATED_RID => 'authenticated user',
+        ),
+    );
+    $u = user_save(NULL, $fields);
+  }
+  user_login_submit(NULL, $form_state['uid'] = $u->uid);
+  drupal_exit();
+}

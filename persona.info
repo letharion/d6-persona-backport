@@ -1,0 +1,5 @@
+name = Mozilla Persona
+description = Adds Mozilla Persona functionality to the standard user login form
+core = 7.x
+
+scripts[] = persona.js
