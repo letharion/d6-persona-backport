@@ -9,7 +9,7 @@
         e.stopPropagation();
         navigator.id.request();
       });
-      $('.persona-logout, a[href="^/user/logout"], a[href="^index.php?q=user/logout"]').click(function(e){
+      $('.persona-logout, a[href$="user/logout"], a[href$="index.php?q=user/logout"]').click(function(e){
         e.preventDefault();
         e.stopPropagation();
         navigator.id.logout();
@@ -61,7 +61,8 @@
           type: 'POST',
           url: 'index.php?q=persona/verify',
           data: {
-            assertion: assertion
+            assertion: assertion,
+            token: Drupal.settings.persona.token
           },
           success: function(res, status, xhr) {
             console.log(res);
@@ -70,6 +71,7 @@
           error: function(res, status, xhr) {
             if(status == "error"){
               navigator.id.logout();
+              console.log("Error logging in...");
               window.location = 'user';
             }
             console.log(res);

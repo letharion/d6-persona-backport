@@ -5,6 +5,18 @@
  */
 
 /**
+ * Implements hook_init().
+ */
+function persona_init() {
+  global $user;
+  // Add the token so JavaScript can use it.
+  drupal_add_js(array('persona' => array('token' => persona_get_token('persona-secure-token'))), "setting");
+  $user_mail = (!$user->uid) ? NULL : $user->mail;
+  drupal_add_js("https://login.persona.org/include.js", "external");
+  drupal_add_js(array('persona' => array('user' => array('mail' => $user_mail))), "setting");
+}
+
+/**
  * Implements hook_menu().
  */
 function persona_menu() {
@@ -23,17 +35,6 @@ function persona_menu() {
     'access arguments' => array('administer site configuration'),
   );
   return $items;
-}
-
-/**
- * Implements hook_preprocess_page().
- * Add the Mozilla Persona js to the page.
- */
-function persona_preprocess_page(&$vars) {
-  global $user;
-  $user_mail = (!$user->uid) ? NULL : $user->mail;
-  drupal_add_js("https://login.persona.org/include.js", "external");
-  drupal_add_js(array('persona' => array('user' => array('mail' => $user_mail))), "setting");
 }
 
 /**
@@ -70,7 +71,7 @@ function persona_form_alter(&$form, &$form_state, $form_id) {
  */
 function persona_verify() {
   global $base_url;
-  if (isset($_POST['assertion'])) {
+  if (isset($_POST['assertion']) && isset($_POST['token']) && ($_POST['token'] == persona_get_token('persona-secure-token'))) {
     $assertion = check_plain($_POST['assertion']);
   }
   else {
@@ -137,4 +138,20 @@ function persona_link($type = 'login') {
       break;
   }
   return '<a href="#" class="' . $classes . '"><span>' . variable_get("persona_{$type}_button_text") . '</span></a>';
+}
+
+/**
+ * Creates a secure token for this user.
+ * 
+ * @param $value
+ *   Seed to use to generate the token.
+ * @return 
+ *   Secure token.
+ * @see drupal_get_token()
+ */
+function persona_get_token($value = '') {
+  if (user_is_logged_in()) {
+    return drupal_get_token($value);
+  }
+  return drupal_hmac_base64($value, session_api_get_sid() . drupal_get_private_key() . drupal_get_hash_salt());
 }
