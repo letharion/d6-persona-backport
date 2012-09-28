@@ -9,11 +9,15 @@
  */
 function persona_init() {
   global $user;
-  // Add the token so JavaScript can use it.
-  drupal_add_js(array('persona' => array('token' => persona_get_token('persona-secure-token'))), "setting");
   $user_mail = (!$user->uid) ? NULL : $user->mail;
   drupal_add_js("https://login.persona.org/include.js", "external");
-  drupal_add_js(array('persona' => array('user' => array('mail' => $user_mail))), "setting");
+  drupal_add_js(
+    array('persona' => array(
+      'user' => array('mail' => $user_mail),
+      'token' => persona_get_token('persona-secure-token'),
+      'site_name' => variable_get('site_name'),
+      'logo' => isset($_SERVER['HTTPS']) ? theme_get_setting('logo') : NULL,
+    )), "setting");
 }
 
 /**

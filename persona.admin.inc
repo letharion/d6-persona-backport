@@ -8,7 +8,7 @@
  * Implements hook_form_ID().
  */
 function persona_admin_form($form, &$form_state) {
-  $form = array();
+  $form = array('#attributes' => array('enctype' => 'multipart/form-data'));
 
   // Login form settings.
   $form['login_settings'] = array(

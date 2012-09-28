@@ -7,7 +7,10 @@
       $('.persona-login').click(function(e){
         e.preventDefault();
         e.stopPropagation();
-        navigator.id.request();
+        navigator.id.request({
+          siteName:Drupal.settings.persona.site_name,
+          siteLogo:Drupal.settings.persona.logo
+        });
       });
       $('.persona-logout, a[href$="user/logout"], a[href$="index.php?q=user/logout"]').click(function(e){
         e.preventDefault();
