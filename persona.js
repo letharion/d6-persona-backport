@@ -13,6 +13,7 @@
         e.preventDefault();
         e.stopPropagation();
         navigator.id.logout();
+        window.location = "/user/logout";
       });
       Drupal.persona.watch();
     }
@@ -20,8 +21,9 @@
   
   Drupal.persona.watch = function(){
     navigator.id.watch({
-      loggedInUser: Drupal.settings.persona.user.mail,
+      loggedInUser:Drupal.settings.persona.user.mail,
       onlogin: function(assertion) {
+        console.log('logging in...');
         $.ajax({
           type: 'POST',
           url: '/persona/verify',
@@ -30,7 +32,6 @@
           },
           success: function(res, status, xhr) {
             window.location.reload();
-            console.log(res);
           },
           error: function(res, status, xhr) {
             console.log(res);
@@ -38,7 +39,7 @@
         });
       },
       onlogout: function() {
-        window.location = '/user/logout';
+        console.log('Logging out...');
       }
     });   
   }
