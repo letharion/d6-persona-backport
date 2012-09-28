@@ -9,7 +9,7 @@
         e.stopPropagation();
         navigator.id.request();
       });
-      $('.persona-logout, a[href="/user/logout"]').click(function(e){
+      $('.persona-logout, a[href="^/user/logout"], a[href="^index.php?q=user/logout"]').click(function(e){
         e.preventDefault();
         e.stopPropagation();
         navigator.id.logout();
@@ -59,7 +59,7 @@
         console.log('logging in...');
         $.ajax({
           type: 'POST',
-          url: '/persona/verify',
+          url: 'index.php?q=persona/verify',
           data: {
             assertion: assertion
           },
@@ -68,6 +68,10 @@
             window.location.reload();
           },
           error: function(res, status, xhr) {
+            if(status == "error"){
+              navigator.id.logout();
+              window.location = 'user';
+            }
             console.log(res);
           }
         });
