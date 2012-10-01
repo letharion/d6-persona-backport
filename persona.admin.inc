@@ -10,6 +10,28 @@
 function persona_admin_form($form, &$form_state) {
   $form = array('#attributes' => array('enctype' => 'multipart/form-data'));
 
+  $form['general_settings'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('General Settings'),
+    '#collapsible' => TRUE,
+  );
+
+  $form['general_settings']['persona_takeover_login'] = array(
+    '#type' => 'checkbox',
+    '#title' => 'Set Persona as the only login method',
+    '#default_value' => variable_get('persona_takeover_login'),
+    '#description' => t('Users will still be able to register using the reg form.'),
+  );
+
+  $form['general_settings']['persona_allow_registration'] = array(
+    '#type' => 'checkbox',
+    '#title' => 'Allow users to register using Persona',
+    '#default_value' => variable_get('persona_allow_registration'),
+    '#description' => t('<b>WARNING:</b> If you allow users to register via Persona, they will bypass the standard reg form.<br />
+                         If you don\'t allow users to register via Persona, they will be taken to the standard reg form.'),
+  );
+
+
   // Login form settings.
   $form['login_settings'] = array(
     '#type' => 'fieldset',
@@ -62,6 +84,7 @@ function persona_admin_form($form, &$form_state) {
     '#type' => 'checkbox',
     '#title' => t('Display on registration form'),
     '#default_value' => variable_get('persona_register_display'),
+    '#description' => t('<b>NOTE:</b> Will only show if "Allow users to register using Persona" is checked.'),
   );
   $form['register_settings']['register_customize'] = array(
     '#type' => 'item',
@@ -86,6 +109,13 @@ function persona_admin_form($form, &$form_state) {
   );
   $form['register_settings']['register_customize']['person_button_preview'] = array(
     '#markup' => persona_link('register'),
+  );
+
+  $form['register_settings']['register_customize']['persona_register_error_message'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Login error message'),
+    '#default_value' => variable_get('persona_register_error_message'),
+    '#description' => t('This error will be shown on the registration form when a user tries to login but does not have an account.'),
   );
 
   return system_settings_form($form);

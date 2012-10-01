@@ -9,15 +9,22 @@
  */
 function persona_init() {
   global $user;
-  $user_mail = (!$user->uid) ? NULL : $user->mail;
+  session_api_start_session();
   drupal_add_js("https://login.persona.org/include.js", "external");
-  drupal_add_js(
-    array('persona' => array(
-      'user' => array('mail' => $user_mail),
-      'token' => persona_get_token('persona-secure-token'),
-      'site_name' => variable_get('site_name'),
-      'logo' => isset($_SERVER['HTTPS']) ? theme_get_setting('logo') : NULL,
-    )), "setting");
+  // Add user email so Persona is aware of loggedInUser.
+  if (!isset($user->mail)) {
+    $user->mail = NULL;
+  }
+  drupal_add_js(array('persona' => array('user' => array('mail' => $user->mail))), "setting");
+  // Add token to help authenticate user actions.
+  drupal_add_js(array('persona' => array('token' => persona_get_token('persona-secure-token'))), "setting");
+  // Add site name to display on Persona form.
+  drupal_add_js(array('persona' => array('site' => array("name" => variable_get('site_name')))), "setting");
+  // Add logo to Persona form if HTTPS is available. 
+  // WILL NOT WORK without HTTPS.
+  if (!empty($_SERVER['HTTPS'])) {
+    drupal_add_js(array('persona' => array("site" => array('logo' => theme_get_setting('logo')))), "setting");
+  }
 }
 
 /**
@@ -27,6 +34,12 @@ function persona_menu() {
   $items['persona/verify'] = array(
     'type' => MENU_CALLBACK,
     'page callback' => 'persona_verify',
+    'delivery callback' => 'drupal_json_output',
+    'access callback' => TRUE,
+  );
+  $items['persona/logout'] = array(
+    'type' => MENU_CALLBACK,
+    'page callback' => 'persona_logout',
     'access callback' => TRUE,
   );
   $items['admin/config/people/persona'] = array(
@@ -42,25 +55,69 @@ function persona_menu() {
 }
 
 /**
+ * Implements hook_menu_alter().
+ */
+function persona_menu_alter(&$items) {
+  if (variable_get('persona_takeover_login')) {
+    unset($items['user/password']);
+  }
+}
+
+/**
+ * Menu callback to logout and end a user session.
+ */
+function persona_logout() {
+  global $user;
+  session_destroy();
+  print "";
+}
+
+/**
  * Implements hook_form_alter().
  */
 function persona_form_alter(&$form, &$form_state, $form_id) {
   switch ($form_id) {
+    case "user_profile_form":
+      if (variable_get('persona_takeover_login')) {
+        unset($form['account']['pass']);
+        unset($form['account']['current_pass']);
+        unset($form['account']['current_pass_required_values']);
+        $form['account']['mail']['#description'] .= " If you change this e-mail after creating an account using Persona, you will have to re-validate your Persona e-mail.";
+      }
+      break;
     case "user_login":
+      if (variable_get('persona_takeover_login')) {
+        unset($form['name']);
+        unset($form['pass']);
+        unset($form['actions']['submit']);
+      }
       if (!variable_get('persona_login_display')) {
         break;
       }
       $form['persona']['#markup'] = persona_link();
       break;
     case "user_login_block":
+      if (variable_get('persona_takeover_login')) {
+        unset($form['name']);
+        unset($form['pass']);
+        unset($form['actions']['submit']);
+      }
       if (!variable_get('persona_login_block_display')) {
         break;
       }
       $form['persona']['#markup'] = persona_link();
       break;
     case "user_register_form":
-      if (!variable_get('persona_register_display')) {
+      if (variable_get('persona_takeover_login')) {
+        unset($form['account']['name']);
+        unset($form['account']['mail']);
+        unset($form['actions']['submit']);
+      }
+      if (!variable_get('persona_takeover_login') && (!variable_get('persona_register_display') || !variable_get('persona_allow_registration'))) {
         break;
+      }
+      if (isset($_COOKIE['persona_email']) && empty($form['account']['mail']['#default_value'])) {
+        $form['account']['mail']['#default_value'] = $_COOKIE['persona_email'];
       }
       $persona_link = array(
         '#markup' => persona_link('register'),
@@ -75,11 +132,12 @@ function persona_form_alter(&$form, &$form_state, $form_id) {
  */
 function persona_verify() {
   global $base_url;
+  global $user;
   if (isset($_POST['assertion']) && isset($_POST['token']) && ($_POST['token'] == persona_get_token('persona-secure-token'))) {
     $assertion = check_plain($_POST['assertion']);
   }
   else {
-    return MENU_ACCESS_DENIED;
+    return persona_status("error", "bad assertion or token");
   }
   // Verify the assertion via the persona API.
   $result = drupal_http_request("https://verifier.login.persona.org/verify", array(
@@ -87,22 +145,34 @@ function persona_verify() {
     'headers' => array('Content-Type' => 'application/x-www-form-urlencoded'),
     "data" => "assertion=$assertion&audience=$base_url",
     ));
-  if ($result->code !== "200") {
-    return MENU_ACCESS_DENIED;
-  }
+  // HTTP Status should be 200, and response should return 'okay'.
   $response = (object) drupal_json_decode($result->data);
-  // Response should have a status of "okay".
-  if ($response->status !== 'okay') {
-    return MENU_ACCESS_DENIED;
+  if ($result->code !== '200' || $response->status !== 'okay') {
+    drupal_set_message(t("Sorry, we could not log you in via Persona."), "error");
+    return persona_status("error", "response failed");
   }
   // Check to see if this user already exists.
   $account = user_load_by_mail($response->email);
-  if (empty($account)) {
+
+  // If account exists...
+  if (!empty($account)) {
+    // If user is allowed to log in...
+    if ($account->status == 1) {
+      $user = $account;
+      user_login_finalize($form_state['uid'] = $user->uid);
+      return persona_status("okay", array("user" => $account));
+    }
+    else {
+      drupal_set_message(t("You are not allowed to log in at this time."), "error");
+      return persona_status("error", "access denied");
+    }
+  }
+  elseif (variable_get('persona_allow_registration')) {
     // Need to create an account for this user.
     $fields = array(
       'name' => $response->email,
       'mail' => $response->email,
-      'pass' => user_password(),
+      'pass' => user_password(16),
       'status' => 1,
       'init' => 'email address',
       'roles' => array(
@@ -110,15 +180,30 @@ function persona_verify() {
       ),
     );
     $account = user_save(array(), $fields);
+    // Login the user.
+    $user = $account;
+    user_login_finalize($form_state['uid'] = $user->uid);
+    return persona_status("okay", "");
   }
   else {
-    if ($account->status != 1) {
-      return MENU_ACCESS_DENIED;
+    // User needs to make an account.
+    $message = variable_get('persona_register_error_message');
+    if (!empty($message)) {
+      drupal_set_message(t("@message", array("@message" => $message)), "error");
     }
+    setcookie("persona_email", $response->email, time() + 30, "/");
+    return persona_status("error", "needs to register");
   }
-  // Login the user.
-  user_login_submit(array(), $form_state['uid'] = $account->uid);
-  drupal_exit();
+}
+
+/**
+ * Returns a JSON string for JavaScript to use.
+ * @param string $status
+ * @param string $message
+ * @return string
+ */
+function persona_status($status, $message = "") {
+  return array("status" => $status, "response" => $message);
 }
 
 /**

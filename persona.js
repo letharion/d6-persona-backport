@@ -8,8 +8,8 @@
         e.preventDefault();
         e.stopPropagation();
         navigator.id.request({
-          siteName:Drupal.settings.persona.site_name,
-          siteLogo:Drupal.settings.persona.logo
+          siteName:Drupal.settings.persona.site.name,
+          siteLogo:Drupal.settings.persona.site.logo
         });
       });
       $('.persona-logout, a[href$="user/logout"], a[href$="index.php?q=user/logout"]').click(function(e){
@@ -59,7 +59,6 @@
     navigator.id.watch({
       loggedInUser:Drupal.settings.persona.user.mail,
       onlogin: function(assertion) {
-        console.log('logging in...');
         $.ajax({
           type: 'POST',
           url: 'index.php?q=persona/verify',
@@ -67,24 +66,37 @@
             assertion: assertion,
             token: Drupal.settings.persona.token
           },
+          dataType: "json",
           success: function(res, status, xhr) {
-            console.log(res);
-            window.location.reload();
-          },
-          error: function(res, status, xhr) {
-            if(status == "error"){
-              navigator.id.logout();
-              console.log("Error logging in...");
-              window.location = 'user';
-            }
-            console.log(res);
+            console.log('logging in...');
+            Drupal.persona.handleLogin(res);
           }
         });
       },
       onlogout: function() {
-        console.log('Logging out...');
+        console.log("Logging out...");
+        $.ajax({
+          type:'POST',
+          url:'index.php?q=persona/logout'
+        });
       }
     });   
+  }
+  
+  Drupal.persona.handleLogin = function(res){
+    if(res.status === "okay"){
+      // User should now be logged in, just refresh the page.
+      window.location.reload();
+    }else if(res.status === "error"){
+      console.log(res.response);
+      navigator.id.logout();
+      if(res.response === "needs to register"){
+        window.location = Drupal.settings.basePath + "user/register";
+      }
+      if(res.response === "access denied"){
+        window.location.reload();
+      }
+    }
   }
  
  
