@@ -151,7 +151,7 @@ function persona_verify() {
     "data" => "assertion=$assertion&audience=$base_url",
   ));
   // HTTP Status should be 200, and response should return 'okay'.
-  $response = (object)drupal_json_decode($result->data);
+  $response = (object) drupal_json_decode($result->data);
   if ($result->code !== '200' || $response->status !== 'okay') {
     drupal_set_message(t("Sorry, we could not log you in via Persona."), "error");
     return persona_status("error", "response failed");
@@ -217,7 +217,6 @@ function persona_login_user($account) {
  *
  * @return string
  *   Returns an array to be parsed as JSON.
- *
  */
 function persona_status($status, $message = "") {
   return array(
@@ -229,7 +228,7 @@ function persona_status($status, $message = "") {
 /**
  * Returns a Persona login or registration link.
  *
- * @param $type
+ * @param string $type
  *   Should be 'login' or 'register'.
  */
 function persona_link($type = 'login') {
@@ -252,7 +251,7 @@ function persona_link($type = 'login') {
   }
   $text = variable_get("persona_{$type}_button_text");
   return l("<span>$text</span>", NULL, array(
-    "attributes" => array("class" => $classes,),
+    "attributes" => array("class" => $classes),
     "fragment" => "persona_$type",
     "html" => TRUE,
   ));
