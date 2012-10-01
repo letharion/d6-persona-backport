@@ -7,7 +7,8 @@
 /**
  * Implements hook_init().
  */
-function persona_init() {
+function persona_init()
+{
   global $user;
   session_api_start_session();
   drupal_add_js("https://login.persona.org/include.js", "external");
@@ -22,7 +23,7 @@ function persona_init() {
   drupal_add_js(array('persona' => array('site' => array("name" => variable_get('site_name')))), "setting");
   // Add logo to Persona form if HTTPS is available. 
   // WILL NOT WORK without HTTPS.
-  if (!empty($_SERVER['HTTPS'])) {
+  if (!empty($_SERVER['HTTPS']) && theme_get_setting('logo') != "") {
     drupal_add_js(array('persona' => array("site" => array('logo' => theme_get_setting('logo')))), "setting");
   }
 }
@@ -30,7 +31,8 @@ function persona_init() {
 /**
  * Implements hook_menu().
  */
-function persona_menu() {
+function persona_menu()
+{
   $items['persona/verify'] = array(
     'type' => MENU_CALLBACK,
     'page callback' => 'persona_verify',
@@ -57,7 +59,8 @@ function persona_menu() {
 /**
  * Implements hook_menu_alter().
  */
-function persona_menu_alter(&$items) {
+function persona_menu_alter(&$items)
+{
   if (variable_get('persona_takeover_login')) {
     unset($items['user/password']);
   }
@@ -66,7 +69,8 @@ function persona_menu_alter(&$items) {
 /**
  * Menu callback to logout and end a user session.
  */
-function persona_logout() {
+function persona_logout()
+{
   global $user;
   session_destroy();
   print "";
@@ -75,7 +79,8 @@ function persona_logout() {
 /**
  * Implements hook_form_alter().
  */
-function persona_form_alter(&$form, &$form_state, $form_id) {
+function persona_form_alter(&$form, &$form_state, $form_id)
+{
   switch ($form_id) {
     case "user_profile_form":
       if (variable_get('persona_takeover_login')) {
@@ -119,9 +124,7 @@ function persona_form_alter(&$form, &$form_state, $form_id) {
       if (isset($_COOKIE['persona_email']) && empty($form['account']['mail']['#default_value'])) {
         $form['account']['mail']['#default_value'] = $_COOKIE['persona_email'];
       }
-      $persona_link = array(
-        '#markup' => persona_link('register'),
-      );
+      $persona_link = array('#markup' => persona_link('register'),);
       $form['account']['persona'] = $persona_link;
       break;
   }
@@ -130,7 +133,8 @@ function persona_form_alter(&$form, &$form_state, $form_id) {
 /**
  * Callback function to validate the persona assertion.
  */
-function persona_verify() {
+function persona_verify()
+{
   global $base_url;
   global $user;
   if (isset($_POST['assertion']) && isset($_POST['token']) && ($_POST['token'] == persona_get_token('persona-secure-token'))) {
@@ -144,9 +148,9 @@ function persona_verify() {
     "method" => "POST",
     'headers' => array('Content-Type' => 'application/x-www-form-urlencoded'),
     "data" => "assertion=$assertion&audience=$base_url",
-    ));
+  ));
   // HTTP Status should be 200, and response should return 'okay'.
-  $response = (object) drupal_json_decode($result->data);
+  $response = (object)drupal_json_decode($result->data);
   if ($result->code !== '200' || $response->status !== 'okay') {
     drupal_set_message(t("Sorry, we could not log you in via Persona."), "error");
     return persona_status("error", "response failed");
@@ -158,8 +162,7 @@ function persona_verify() {
   if (!empty($account)) {
     // If user is allowed to log in...
     if ($account->status == 1) {
-      $user = $account;
-      user_login_finalize($form_state['uid'] = $user->uid);
+      persona_login_user($account);
       return persona_status("okay", array("user" => $account));
     }
     else {
@@ -175,14 +178,11 @@ function persona_verify() {
       'pass' => user_password(16),
       'status' => 1,
       'init' => 'email address',
-      'roles' => array(
-        DRUPAL_AUTHENTICATED_RID => 'authenticated user',
-      ),
+      'roles' => array(DRUPAL_AUTHENTICATED_RID => 'authenticated user',),
     );
     $account = user_save(array(), $fields);
     // Login the user.
-    $user = $account;
-    user_login_finalize($form_state['uid'] = $user->uid);
+    persona_login_user($account);
     return persona_status("okay", "");
   }
   else {
@@ -191,9 +191,20 @@ function persona_verify() {
     if (!empty($message)) {
       drupal_set_message(t("@message", array("@message" => $message)), "error");
     }
-    setcookie("persona_email", $response->email, time() + 30, "/");
+    setcookie("persona_email", $response->email, REQUEST_TIME + 30, "/");
     return persona_status("error", "needs to register");
   }
+}
+
+/**
+ * Logs in a user.
+ */
+function persona_login_user($account)
+{
+  global $user;
+  $user = $account;
+  $form_state = array();
+  user_login_finalize($form_state['uid'] = $user->uid);
 }
 
 /**
@@ -202,8 +213,12 @@ function persona_verify() {
  * @param string $message
  * @return string
  */
-function persona_status($status, $message = "") {
-  return array("status" => $status, "response" => $message);
+function persona_status($status, $message = "")
+{
+  return array(
+    "status" => $status,
+    "response" => $message
+  );
 }
 
 /**
@@ -211,34 +226,41 @@ function persona_status($status, $message = "") {
  * @param $type
  *   Should be 'login' or 'register'.
  */
-function persona_link($type = 'login') {
-  $classes = "persona-login ";
+function persona_link($type = 'login')
+{
+  $classes = array("persona-login");
   switch (variable_get("persona_{$type}_button_style")) {
     case "dark":
-      $classes .= "dark ";
-      $classes .= "persona-button ";
+      $classes[] = "dark ";
+      $classes[] = "persona-button ";
       break;
     case "blue":
-      $classes .= "persona-button ";
+      $classes[] = "persona-button ";
       break;
     case "orange":
-      $classes .= "orange ";
-      $classes .= "persona-button ";
+      $classes[] = "orange ";
+      $classes[] = "persona-button ";
       break;
   }
-  return '<a href="#" class="' . $classes . '"><span>' . variable_get("persona_{$type}_button_text") . '</span></a>';
+  $text = variable_get("persona_{$type}_button_text");
+  return l("<span>$text</span>", NULL, array(
+    "attributes" => array("class" => $classes,),
+    "fragment" => "persona_$type",
+    "html" => TRUE,
+  ));
 }
 
 /**
  * Creates a secure token for this user.
- * 
+ *
  * @param $value
  *   Seed to use to generate the token.
- * @return 
+ * @return
  *   Secure token.
  * @see drupal_get_token()
  */
-function persona_get_token($value = '') {
+function persona_get_token($value = '')
+{
   if (user_is_logged_in()) {
     return drupal_get_token($value);
   }

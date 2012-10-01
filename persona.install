@@ -7,7 +7,7 @@
 /**
  * Implements hook_install().
  */
-function persona_install() {
+function persona_install(){
   // General settings.
   variable_set('persona_allow_registration', FALSE);
   variable_get('persona_takeover_login', FALSE);
@@ -23,4 +23,25 @@ function persona_install() {
   variable_set('persona_register_button_style', '');
   variable_set('persona_register_button_text', "Register with your Email");
   variable_set('persona_register_error_message', "You need to register before logging in using Persona.");
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function persona_uninstall(){
+  // General settings.
+  variable_del('persona_allow_registration');
+  variable_del('persona_takeover_login');
+
+  // Login form settings.
+  variable_del('persona_login_display');
+  variable_del('persona_login_block_display');
+  variable_del('persona_login_button_style');
+  variable_del('persona_login_button_text');
+
+  // Reg form settings.
+  variable_del('persona_register_display');
+  variable_del('persona_register_button_style');
+  variable_del('persona_register_button_text');
+  variable_del('persona_register_error_message');
 }

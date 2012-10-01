@@ -1,7 +1,7 @@
 (function($){
-  
+
   Drupal.persona = {}
-  
+
   Drupal.behaviors.persona = {
     attach:function(){
       $('.persona-login').click(function(e){
@@ -22,7 +22,7 @@
       Drupal.persona.adminFormEnhance();
     }
   }
-  
+
   /**
    * Enhances the admin form with live style updates.
    */
@@ -36,7 +36,7 @@
     $('#edit-persona-login-button-style').change(function(e){
       login_button.removeClass("dark orange persona-button");
       if($(this).val()){
-        var button = "persona-button "; 
+        var button = "persona-button ";
       }
       login_button.addClass(button + $(this).val());
     });
@@ -46,7 +46,7 @@
     $('#edit-persona-register-button-style').change(function(e){
       reg_button.removeClass("dark orange persona-button");
       if($(this).val()){
-        var button = "persona-button "; 
+        var button = "persona-button ";
       }
       reg_button.addClass(button + $(this).val());
     });
@@ -54,41 +54,38 @@
       reg_button.children('span').text($(this).val());
     });
   }
-  
+
   Drupal.persona.watch = function(){
     navigator.id.watch({
       loggedInUser:Drupal.settings.persona.user.mail,
-      onlogin: function(assertion) {
+      onlogin:function(assertion){
         $.ajax({
-          type: 'POST',
-          url: 'index.php?q=persona/verify',
-          data: {
-            assertion: assertion,
-            token: Drupal.settings.persona.token
+          type:'POST',
+          url:'index.php?q=persona/verify',
+          data:{
+            assertion:assertion,
+            token:Drupal.settings.persona.token
           },
-          dataType: "json",
-          success: function(res, status, xhr) {
-            console.log('logging in...');
+          dataType:"json",
+          success:function(res, status, xhr){
             Drupal.persona.handleLogin(res);
           }
         });
       },
-      onlogout: function() {
-        console.log("Logging out...");
+      onlogout:function(){
         $.ajax({
           type:'POST',
           url:'index.php?q=persona/logout'
         });
       }
-    });   
+    });
   }
-  
+
   Drupal.persona.handleLogin = function(res){
     if(res.status === "okay"){
       // User should now be logged in, just refresh the page.
       window.location.reload();
     }else if(res.status === "error"){
-      console.log(res.response);
       navigator.id.logout();
       if(res.response === "needs to register"){
         window.location = Drupal.settings.basePath + "user/register";
@@ -98,7 +95,6 @@
       }
     }
   }
- 
- 
-  
+
+
 }(jQuery));
