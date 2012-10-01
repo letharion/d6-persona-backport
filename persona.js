@@ -7,10 +7,18 @@
       $('.persona-login').click(function (e) {
         e.preventDefault();
         e.stopPropagation();
-        navigator.id.request({
-          siteName:Drupal.settings.persona.site.name,
-          siteLogo:Drupal.settings.persona.site.logo
-        });
+        // Need to check if logo is available for our use.
+        if (typeof Drupal.settings.persona.site.logo == "undefined") {
+          navigator.id.request({
+            siteName:Drupal.settings.persona.site.name
+          });
+        }
+        else {
+          navigator.id.request({
+            siteName:Drupal.settings.persona.site.name,
+            siteLogo:Drupal.settings.persona.site.logo
+          });
+        }
       });
       $('.persona-logout, a[href$="user/logout"], a[href$="index.php?q=user/logout"]').click(function (e) {
         e.preventDefault();
