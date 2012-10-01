@@ -85,6 +85,7 @@ function persona_form_alter(&$form, &$form_state, $form_id) {
         $form['account']['mail']['#description'] .= " If you change this e-mail after creating an account using Persona, you will have to re-validate your Persona e-mail.";
       }
       break;
+
     case "user_login":
       if (variable_get('persona_takeover_login')) {
         unset($form['name']);
@@ -93,9 +94,11 @@ function persona_form_alter(&$form, &$form_state, $form_id) {
       }
       if (!variable_get('persona_login_display')) {
         break;
+
       }
       $form['persona']['#markup'] = persona_link();
       break;
+
     case "user_login_block":
       if (variable_get('persona_takeover_login')) {
         unset($form['name']);
@@ -104,9 +107,11 @@ function persona_form_alter(&$form, &$form_state, $form_id) {
       }
       if (!variable_get('persona_login_block_display')) {
         break;
+
       }
       $form['persona']['#markup'] = persona_link();
       break;
+
     case "user_register_form":
       if (variable_get('persona_takeover_login')) {
         unset($form['account']['name']);
@@ -115,13 +120,15 @@ function persona_form_alter(&$form, &$form_state, $form_id) {
       }
       if (!variable_get('persona_takeover_login') && (!variable_get('persona_register_display') || !variable_get('persona_allow_registration'))) {
         break;
+
       }
       if (isset($_COOKIE['persona_email']) && empty($form['account']['mail']['#default_value'])) {
         $form['account']['mail']['#default_value'] = $_COOKIE['persona_email'];
       }
-      $persona_link = array('#markup' => persona_link('register'),);
+      $persona_link = array('#markup' => persona_link('register'));
       $form['account']['persona'] = $persona_link;
       break;
+
   }
 }
 
@@ -172,7 +179,7 @@ function persona_verify() {
       'pass' => user_password(16),
       'status' => 1,
       'init' => 'email address',
-      'roles' => array(DRUPAL_AUTHENTICATED_RID => 'authenticated user',),
+      'roles' => array(DRUPAL_AUTHENTICATED_RID => 'authenticated user'),
     );
     $account = user_save(array(), $fields);
     // Login the user.
@@ -202,19 +209,26 @@ function persona_login_user($account) {
 
 /**
  * Returns a JSON string for JavaScript to use.
+ *
  * @param string $status
+ *   Status should be 'okay' or 'error'.
  * @param string $message
+ *   Message to be sent back to JavaScript.
+ *
  * @return string
+ *   Returns an array to be parsed as JSON.
+ *
  */
 function persona_status($status, $message = "") {
   return array(
     "status" => $status,
-    "response" => $message
+    "response" => $message,
   );
 }
 
 /**
  * Returns a Persona login or registration link.
+ *
  * @param $type
  *   Should be 'login' or 'register'.
  */
@@ -225,13 +239,16 @@ function persona_link($type = 'login') {
       $classes[] = "dark ";
       $classes[] = "persona-button ";
       break;
+
     case "blue":
       $classes[] = "persona-button ";
       break;
+
     case "orange":
       $classes[] = "orange ";
       $classes[] = "persona-button ";
       break;
+
   }
   $text = variable_get("persona_{$type}_button_text");
   return l("<span>$text</span>", NULL, array(
@@ -244,10 +261,12 @@ function persona_link($type = 'login') {
 /**
  * Creates a secure token for this user.
  *
- * @param $value
+ * @param string $value
  *   Seed to use to generate the token.
- * @return
+ *
+ * @return string
  *   Secure token.
+ *
  * @see drupal_get_token()
  */
 function persona_get_token($value = '') {
