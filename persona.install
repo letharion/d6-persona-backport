@@ -1,13 +1,13 @@
 <?php
 /**
  * @file
- *   Installs the nescessary variables.
+ * Installs the default variable values for Persona.
  */
 
 /**
  * Implements hook_install().
  */
-function persona_install(){
+function persona_install() {
   // General settings.
   variable_set('persona_allow_registration', FALSE);
   variable_get('persona_takeover_login', FALSE);
@@ -28,7 +28,7 @@ function persona_install(){
 /**
  * Implements hook_uninstall().
  */
-function persona_uninstall(){
+function persona_uninstall() {
   // General settings.
   variable_del('persona_allow_registration');
   variable_del('persona_takeover_login');

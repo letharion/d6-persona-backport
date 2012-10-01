@@ -7,7 +7,7 @@
 /**
  * Implements hook_form_ID().
  */
-function persona_admin_form($form, &$form_state){
+function persona_admin_form($form, &$form_state) {
   $form = array('#attributes' => array('enctype' => 'multipart/form-data'));
 
   $form['general_settings'] = array(
@@ -124,17 +124,18 @@ function persona_admin_form($form, &$form_state){
 /**
  * Implements hook_FORM_ID_validate().
  */
-function persona_admin_form_validate($form, &$form_state){
+function persona_admin_form_validate($form, &$form_state) {
   $v = $form_state['values'];
   // Make sure buttons have text.
-  if(empty($v['persona_login_button_text'])){
+  if(empty($v['persona_login_button_text'])) {
     form_set_error('persona_login_button_text', t("Please enter some text for your login button"));
   }
-  if(empty($v['persona_register_button_text'])){
+  if(empty($v['persona_register_button_text'])) {
     form_set_error('persona_register_button_text', t("Please enter some text for your register button"));
   }
-  // Need to check and see if the admin has disabled the login button, but enabled the takeover.
-  if($v['persona_takeover_login'] && !($v['persona_login_display'] || $v['persona_login_block_display'])){
+  // Need to check and see if the admin has disabled the login button,
+  // but enabled the takeover.
+  if($v['persona_takeover_login'] && !($v['persona_login_display'] || $v['persona_login_block_display'])) {
     form_set_error('persona_login_display', t("To use Persona as the only login method, it must be shown on the login form, or block."));
   }
 }
