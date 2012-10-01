@@ -20,6 +20,10 @@ function persona_init() {
   drupal_add_js(array('persona' => array('token' => persona_get_token('persona-secure-token'))), "setting");
   // Add site name to display on Persona form.
   drupal_add_js(array('persona' => array('site' => array("name" => variable_get('site_name')))), "setting");
+  // Add paths for js to use.
+  drupal_add_js(array('persona' => array('site' => array('regform' => url('user/register', array('absolute' => TRUE))))), "setting");
+  drupal_add_js(array('persona' => array('site' => array('logout' => url('user/logout', array('absolute' => TRUE))))), "setting");
+  drupal_add_js(array('persona' => array('site' => array('personaVerify' => url('persona/verify', array('absolute' => TRUE))))), "setting");
   // Add logo to Persona form if HTTPS is available.
   // WILL NOT WORK without HTTPS.
   if (!empty($_SERVER['HTTPS']) && theme_get_setting('logo') != "") {
@@ -82,7 +86,7 @@ function persona_form_alter(&$form, &$form_state, $form_id) {
         unset($form['account']['pass']);
         unset($form['account']['current_pass']);
         unset($form['account']['current_pass_required_values']);
-        $form['account']['mail']['#description'] .= " If you change this e-mail after creating an account using Persona, you will have to re-validate your Persona e-mail.";
+        $form['account']['mail']['#description'] .= " " . t("If you change this e-mail after creating an account using Persona, you will have to re-validate your Persona e-mail.");
       }
       break;
 
@@ -203,8 +207,7 @@ function persona_verify() {
 function persona_login_user($account) {
   global $user;
   $user = $account;
-  $form_state = array();
-  user_login_finalize($form_state['uid'] = $user->uid);
+  user_login_finalize();
 }
 
 /**
