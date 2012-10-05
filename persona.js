@@ -1,6 +1,8 @@
 (function ($) {
 
-  Drupal.persona = {}
+  Drupal.persona = {
+    debug:false
+  }
 
   Drupal.behaviors.persona = {
     attach:function () {
@@ -77,15 +79,13 @@
           },
           dataType:"json",
           success:function (res, status, xhr) {
+            Drupal.persona.debug ? console.log(res) : "";
             Drupal.persona.handleLogin(res);
           }
         });
       },
       onlogout:function () {
-        $.ajax({
-          type:'POST',
-          url:Drupal.settings.persona.site.logout
-        });
+        Drupal.persona.debug ? console.log("Logging out.") : "";
       }
     });
   }
