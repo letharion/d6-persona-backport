@@ -10,7 +10,7 @@
 function persona_install() {
   // General settings.
   variable_set('persona_allow_registration', FALSE);
-  variable_get('persona_takeover_login', FALSE);
+  variable_set('persona_takeover_login', FALSE);
 
   // Login form settings.
   variable_set('persona_login_display', TRUE);
