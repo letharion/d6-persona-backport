@@ -118,7 +118,12 @@ function persona_admin_form($form, &$form_state) {
     '#description' => t('This error will be shown on the registration form when a user tries to login but does not have an account.'),
   );
 
-  return system_settings_form($form);
+  $form = system_settings_form($form);
+
+  // Make sure our submit handler is invoked.
+  $form['#submit'][] = 'persona_admin_form_submit';
+
+  return $form;
 }
 
 /**
@@ -138,4 +143,12 @@ function persona_admin_form_validate($form, &$form_state) {
   if ($v['persona_takeover_login'] && !($v['persona_login_display'] || $v['persona_login_block_display'])) {
     form_set_error('persona_login_display', t("To use Persona as the only login method, it must be shown on the login form, or block."));
   }
+}
+
+/**
+ * Implements hook_FORM_ID_submit().
+ */
+function persona_admin_form_submit(array $form, array &$form_state) {
+  // Make sure changes in persona_menu_alter() take effect.
+  menu_rebuild();
 }
