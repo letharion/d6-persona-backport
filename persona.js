@@ -42,7 +42,6 @@
       return false;
     }
     var login_button = $('#edit-login-customize .persona-login');
-    var reg_button = $('#edit-register-customize .persona-login');
     $('#edit-persona-login-button-style').change(function (e) {
       login_button.removeClass("dark orange persona-button");
       var button = "";
@@ -53,16 +52,6 @@
     });
     $('#edit-persona-login-button-text').keyup(function (e) {
       login_button.children('span').text($(this).val());
-    });
-    $('#edit-persona-register-button-style').change(function (e) {
-      reg_button.removeClass("dark orange persona-button");
-      if ($(this).val()) {
-        var button = "persona-button ";
-      }
-      reg_button.addClass(button + $(this).val());
-    });
-    $('#edit-persona-register-button-text').keyup(function (e) {
-      reg_button.children('span').text($(this).val());
     });
   }
 
@@ -97,12 +86,7 @@
     }
     else if (res.status === "error") {
       navigator.id.logout();
-      if (res.response === "needs to register") {
-        window.location = Drupal.settings.persona.site.regform;
-      }
-      if (res.response === "access denied") {
-        window.location.reload();
-      }
+      window.location.reload();
     }
   }
 

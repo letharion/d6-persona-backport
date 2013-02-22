@@ -21,7 +21,6 @@ function persona_init() {
   // Add site name to display on Persona form.
   drupal_add_js(array('persona' => array('site' => array("name" => variable_get('site_name')))), "setting");
   // Add paths for js to use.
-  drupal_add_js(array('persona' => array('site' => array('regform' => url('user/register', array('absolute' => TRUE))))), "setting");
   drupal_add_js(array('persona' => array('site' => array('logout' => url('user/logout', array('absolute' => TRUE))))), "setting");
   drupal_add_js(array('persona' => array('site' => array('personaVerify' => url('persona/verify', array('absolute' => TRUE))))), "setting");
   // Add logo to Persona form if HTTPS is available.
@@ -63,6 +62,7 @@ function persona_menu() {
  */
 function persona_menu_alter(&$items) {
   if (variable_get('persona_takeover_login')) {
+    unset($items['user/register']);
     unset($items['user/password']);
   }
 }
@@ -74,6 +74,29 @@ function persona_logout() {
   global $user;
   session_destroy();
   print "";
+}
+
+/**
+ * Personafies login forms.
+ */
+function _persona_login_form_alter(array &$form) {
+  if (variable_get('persona_login_display')) {
+    $form['persona'] = array(
+      '#markup' => persona_link(),
+      '#weight' => -1,
+    );
+  }
+  if (variable_get('persona_takeover_login')) {
+    unset($form['name']);
+    unset($form['pass']);
+    unset($form['actions']);
+  }
+  else {
+    $form['or'] = array(
+      '#markup' => t("<p>Or log in below:</p>"),
+      '#weight' => 0,
+    );
+  }
 }
 
 /**
@@ -91,48 +114,16 @@ function persona_form_alter(array &$form, array &$form_state, $form_id) {
       break;
 
     case "user_login":
-      if (variable_get('persona_takeover_login')) {
-        unset($form['name']);
-        unset($form['pass']);
-        unset($form['actions']['submit']);
-      }
-      if (!variable_get('persona_login_display')) {
-        break;
-
-      }
-      $form['persona']['#markup'] = persona_link();
+      _persona_login_form_alter($form);
       break;
 
     case "user_login_block":
+      _persona_login_form_alter($form);
       if (variable_get('persona_takeover_login')) {
-        unset($form['name']);
-        unset($form['pass']);
-        unset($form['actions']['submit']);
+        // Remove links to disabled menu items.
+        unset($form['links']);
       }
-      if (!variable_get('persona_login_block_display')) {
-        break;
-
-      }
-      $form['persona']['#markup'] = persona_link();
       break;
-
-    case "user_register_form":
-      if (variable_get('persona_takeover_login')) {
-        unset($form['account']['name']);
-        unset($form['account']['mail']);
-        unset($form['actions']['submit']);
-      }
-      if (!variable_get('persona_takeover_login') && (!variable_get('persona_register_display') || !variable_get('persona_allow_registration'))) {
-        break;
-
-      }
-      if (isset($_COOKIE['persona_email']) && empty($form['account']['mail']['#default_value'])) {
-        $form['account']['mail']['#default_value'] = $_COOKIE['persona_email'];
-      }
-      $persona_link = array('#markup' => persona_link('register'));
-      $form['account']['persona'] = $persona_link;
-      break;
-
   }
 }
 
@@ -175,29 +166,33 @@ function persona_verify() {
       return persona_status("error", "access denied");
     }
   }
-  elseif (variable_get('persona_allow_registration')) {
+  elseif (variable_get('user_register')) {
     // Need to create an account for this user.
     $fields = array(
       'name' => $response->email,
       'mail' => $response->email,
       'pass' => user_password(16),
-      'status' => 1,
-      'init' => 'email address',
+      'status' => (variable_get('user_register') == USER_REGISTER_VISITORS),
+      'init' => $response->email,
       'roles' => array(DRUPAL_AUTHENTICATED_RID => 'authenticated user'),
     );
     $account = user_save(array(), $fields);
-    // Login the user.
-    persona_login_user($account);
-    return persona_status("okay", "");
+
+    if (variable_get('user_register') == USER_REGISTER_VISITORS) {
+      // Login the user.
+      persona_login_user($account);
+      return persona_status("okay", "");
+    }
+    else {
+      _user_mail_notify('register_pending_approval', $account);
+      drupal_set_message(t("Thank you for applying for an account. Your account is currently pending approval by the site administrator.<br />In the meantime, a welcome message with further instructions has been sent to your e-mail address."));
+      return persona_status("error", "approval required");
+    }
   }
   else {
-    // User needs to make an account.
-    $message = variable_get('persona_register_error_message');
-    if (!empty($message)) {
-      drupal_set_message(t("@message", array("@message" => $message)), "error");
-    }
-    setcookie("persona_email", $response->email, REQUEST_TIME + 30, "/");
-    return persona_status("error", "needs to register");
+    // Visitors cannot create accounts.
+    drupal_set_message(t("Only administrators are permitted to register new accounts on this website."), "error");
+    return persona_status("error", "access denied");
   }
 }
 
@@ -229,14 +224,11 @@ function persona_status($status, $message = "") {
 }
 
 /**
- * Returns a Persona login or registration link.
- *
- * @param string $type
- *   Should be 'login' or 'register'.
+ * Returns a Persona sign in link.
  */
-function persona_link($type = 'login') {
+function persona_link() {
   $classes = array("persona-login");
-  switch (variable_get("persona_{$type}_button_style")) {
+  switch (variable_get("persona_login_button_style")) {
     case "dark":
       $classes[] = "dark ";
       $classes[] = "persona-button ";
@@ -252,10 +244,10 @@ function persona_link($type = 'login') {
       break;
 
   }
-  $text = variable_get("persona_{$type}_button_text");
+  $text = variable_get("persona_login_button_text");
   return l("<span>$text</span>", NULL, array(
     "attributes" => array("class" => $classes),
-    "fragment" => "persona_$type",
+    "fragment" => "persona_login",
     "html" => TRUE,
   ));
 }

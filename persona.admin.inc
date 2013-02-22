@@ -20,17 +20,10 @@ function persona_admin_form(array $form, array &$form_state) {
     '#type' => 'checkbox',
     '#title' => 'Set Persona as the only login method',
     '#default_value' => variable_get('persona_takeover_login'),
-    '#description' => t('Users will still be able to register using the reg form.'),
+    '#description' => t("It will only be possible to sign in or register with !link.",
+      array('!link' => l("Mozilla Persona", 'http://www.mozilla.org/en-US/persona/',
+        array('attributes' => array('target' => '_blank'))))),
   );
-
-  $form['general_settings']['persona_allow_registration'] = array(
-    '#type' => 'checkbox',
-    '#title' => 'Allow users to register using Persona',
-    '#default_value' => variable_get('persona_allow_registration'),
-    '#description' => t('<b>WARNING:</b> If you allow users to register via Persona, they will bypass the standard reg form.<br />
-                         If you don\'t allow users to register via Persona, they will be taken to the standard reg form.'),
-  );
-
 
   // Login form settings.
   $form['login_settings'] = array(
@@ -74,50 +67,6 @@ function persona_admin_form(array $form, array &$form_state) {
     '#markup' => persona_link(),
   );
 
-  // Registration form settings.
-  $form['register_settings'] = array(
-    '#type' => 'fieldset',
-    '#title' => t('Persona Registration Form Settings'),
-    '#collapsible' => TRUE,
-  );
-  $form['register_settings']['persona_register_display'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('Display on registration form'),
-    '#default_value' => variable_get('persona_register_display'),
-    '#description' => t('<b>NOTE:</b> Will only show if "Allow users to register using Persona" is checked.'),
-  );
-  $form['register_settings']['register_customize'] = array(
-    '#type' => 'item',
-    '#title' => 'Customize the button',
-  );
-  $form['register_settings']['register_customize']['persona_register_button_style'] = array(
-    '#prefix' => '<hr />',
-    '#type' => 'select',
-    '#title' => t('Select a style'),
-    '#default_value' => variable_get('persona_register_button_style'),
-    '#options' => array(
-      '' => 'default',
-      'dark' => 'Black',
-      'blue' => 'Blue',
-      'orange' => 'Red',
-    ),
-  );
-  $form['register_settings']['register_customize']['persona_register_button_text'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Button text'),
-    '#default_value' => variable_get('persona_register_button_text'),
-  );
-  $form['register_settings']['register_customize']['person_button_preview'] = array(
-    '#markup' => persona_link('register'),
-  );
-
-  $form['register_settings']['register_customize']['persona_register_error_message'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Login error message'),
-    '#default_value' => variable_get('persona_register_error_message'),
-    '#description' => t('This error will be shown on the registration form when a user tries to login but does not have an account.'),
-  );
-
   $form = system_settings_form($form);
 
   // Make sure our submit handler is invoked.
@@ -134,9 +83,6 @@ function persona_admin_form_validate(array $form, array &$form_state) {
   // Make sure buttons have text.
   if (empty($v['persona_login_button_text'])) {
     form_set_error('persona_login_button_text', t("Please enter some text for your login button"));
-  }
-  if (empty($v['persona_register_button_text'])) {
-    form_set_error('persona_register_button_text', t("Please enter some text for your register button"));
   }
   // Need to check and see if the admin has disabled the login button,
   // but enabled the takeover.
