@@ -137,6 +137,8 @@ function persona_verify() {
     $assertion = check_plain($_POST['assertion']);
   }
   else {
+    watchdog('persona', "Bad assertion or token.", array(), WATCHDOG_ERROR);
+    drupal_set_message(t("Sorry, there was a problem signing you in via Persona."), "error");
     return persona_status("error", "bad assertion or token");
   }
   // Verify the assertion via the persona API.
@@ -148,7 +150,8 @@ function persona_verify() {
   // HTTP Status should be 200, and response should return 'okay'.
   $response = (object) drupal_json_decode($result->data);
   if ($result->code !== '200' || $response->status !== 'okay') {
-    drupal_set_message(t("Sorry, we could not log you in via Persona."), "error");
+    watchdog('persona', "Bad response: @response; HTTP code: @code", array('@response' => var_export((array) $response, TRUE), '@code' => $result->code), WATCHDOG_ERROR);
+    drupal_set_message(t("Sorry, there was a problem signing you in via Persona."), "error");
     return persona_status("error", "response failed");
   }
   // Check to see if this user already exists.
@@ -158,11 +161,13 @@ function persona_verify() {
   if (!empty($account)) {
     // If user is allowed to log in...
     if ($account->status == 1) {
+      watchdog('persona', "Sign in to existing account by %email successful.", array('%email' => $response->email));
       persona_login_user($account);
       return persona_status("okay", array("user" => $account));
     }
     else {
-      drupal_set_message(t("You are not allowed to log in at this time."), "error");
+      watchdog('persona', "Sign in by %email to blocked account denied.", array('%email' => $response->email), WATCHDOG_WARNING);
+      drupal_set_message(t("You are not allowed to sign in at this time."), "error");
       return persona_status("error", "access denied");
     }
   }
@@ -179,11 +184,13 @@ function persona_verify() {
     $account = user_save(array(), $fields);
 
     if (variable_get('user_register') == USER_REGISTER_VISITORS) {
+      watchdog('persona', "Sign in to new account by %email successful.", array('%email' => $response->email));
       // Login the user.
       persona_login_user($account);
       return persona_status("okay", "");
     }
     else {
+      watchdog('persona', "Account created during sign in for %email pending approval.", array('%email' => $response->email));
       _user_mail_notify('register_pending_approval', $account);
       drupal_set_message(t("Thank you for applying for an account. Your account is currently pending approval by the site administrator.<br />In the meantime, a welcome message with further instructions has been sent to your e-mail address."));
       return persona_status("error", "approval required");
@@ -191,6 +198,7 @@ function persona_verify() {
   }
   else {
     // Visitors cannot create accounts.
+    watchdog('persona', "Attempted sign in without an account by %email.", array('%email' => $response->email), WATCHDOG_WARNING);
     drupal_set_message(t("Only administrators are permitted to register new accounts on this website."), "error");
     return persona_status("error", "access denied");
   }
