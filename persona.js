@@ -41,7 +41,7 @@
       // Not on the admin form.
       return false;
     }
-    var login_button = $('#edit-login-customize .persona-login');
+    var login_button = $('#edit-button .persona-login');
     $('#edit-persona-login-button-style').change(function (e) {
       login_button.removeClass("dark orange persona-button");
       var button = "";

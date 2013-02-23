@@ -46,11 +46,11 @@ function persona_menu() {
     'access callback' => TRUE,
   );
   $items['admin/config/people/persona'] = array(
-    'title' => 'Persona Settings',
+    'title' => "Persona settings",
     'type' => MENU_NORMAL_ITEM,
     'page callback' => 'drupal_get_form',
     'page arguments' => array('persona_admin_form'),
-    'description' => 'Configure settings for Mozilla Persona.',
+    'description' => "Configure settings for signing in with Mozilla Persona.",
     'file' => 'persona.admin.inc',
     'access arguments' => array('administer site configuration'),
   );

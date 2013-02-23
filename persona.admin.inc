@@ -8,63 +8,57 @@
  * Implements hook_form_ID().
  */
 function persona_admin_form(array $form, array &$form_state) {
-  $form = array('#attributes' => array('enctype' => 'multipart/form-data'));
+  $form = array();
 
-  $form['general_settings'] = array(
+  // General settings.
+  $form['general'] = array(
     '#type' => 'fieldset',
-    '#title' => t('General Settings'),
-    '#collapsible' => TRUE,
+    '#title' => t("General"),
   );
-
-  $form['general_settings']['persona_takeover_login'] = array(
+  $form['general']['persona_takeover_login'] = array(
     '#type' => 'checkbox',
-    '#title' => 'Set Persona as the only login method',
+    '#title' => t("Set Persona as the only sign in method"),
     '#default_value' => variable_get('persona_takeover_login'),
     '#description' => t("It will only be possible to sign in or register with !link.",
       array('!link' => l("Mozilla Persona", 'http://www.mozilla.org/en-US/persona/',
         array('attributes' => array('target' => '_blank'))))),
   );
 
-  // Login form settings.
-  $form['login_settings'] = array(
+  // Button settings.
+  $form['button'] = array(
     '#type' => 'fieldset',
-    '#title' => t('Persona Login Form Settings'),
-    '#collapsible' => TRUE,
+    '#title' => t("Sign in button"),
   );
-  $form['login_settings']['persona_login_display'] = array(
+  $form['button']['persona_login_button_style'] = array(
+    '#type' => 'select',
+    '#title' => t("Style"),
+    '#default_value' => variable_get('persona_login_button_style'),
+    '#options' => array(
+      '' => t("None"),
+      'dark' => t("Black"),
+      'blue' => t("Blue"),
+      'orange' => t("Red"),
+    ),
+  );
+  $form['button']['persona_login_button_text'] = array(
+    '#type' => 'textfield',
+    '#title' => t("Text"),
+    '#default_value' => variable_get('persona_login_button_text'),
+  );
+  $form['button']['person_button_preview'] = array(
+    '#type' => 'item',
+    '#title' => t("Preview"),
+    '#markup' => persona_link(),
+  );
+  $form['button']['persona_login_display'] = array(
     '#type' => 'checkbox',
     '#title' => t('Display on login form'),
     '#default_value' => variable_get('persona_login_display'),
   );
-  $form['login_settings']['persona_login_block_display'] = array(
+  $form['button']['persona_login_block_display'] = array(
     '#type' => 'checkbox',
     '#title' => t('Display on login block'),
     '#default_value' => variable_get('persona_login_block_display'),
-  );
-  $form['login_settings']['login_customize'] = array(
-    '#type' => 'item',
-    '#title' => 'Customize the button',
-  );
-  $form['login_settings']['login_customize']['persona_login_button_style'] = array(
-    '#prefix' => '<hr />',
-    '#type' => 'select',
-    '#title' => t('Select a style'),
-    '#default_value' => variable_get('persona_login_button_style'),
-    '#options' => array(
-      '' => 'default',
-      'dark' => 'Black',
-      'blue' => 'Blue',
-      'orange' => 'Red',
-    ),
-  );
-  $form['login_settings']['login_customize']['persona_login_button_text'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Button text'),
-    '#default_value' => variable_get('persona_login_button_text'),
-  );
-
-  $form['login_settings']['login_customize']['person_button_preview'] = array(
-    '#markup' => persona_link(),
   );
 
   $form = system_settings_form($form);
