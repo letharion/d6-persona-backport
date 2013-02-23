@@ -9,7 +9,6 @@
  */
 function persona_init() {
   global $user;
-  session_api_start_session();
   // Include the Persona JavaScript library at the bottom of the page body.
   drupal_add_js('https://login.persona.org/include.js', array(
     'type' => 'external',
