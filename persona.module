@@ -10,7 +10,11 @@
 function persona_init() {
   global $user;
   session_api_start_session();
-  drupal_add_js("https://login.persona.org/include.js", "external");
+  // Include the Persona JavaScript library at the bottom of the page body.
+  drupal_add_js('https://login.persona.org/include.js', array(
+    'type' => 'external',
+    'scope' => 'footer',
+  ));
   // Add user email so Persona is aware of loggedInUser.
   if (!isset($user->mail)) {
     $user->mail = NULL;
