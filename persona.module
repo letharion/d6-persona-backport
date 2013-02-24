@@ -43,11 +43,6 @@ function persona_menu() {
     'delivery callback' => 'drupal_json_output',
     'access callback' => TRUE,
   );
-  $items['persona/logout'] = array(
-    'type' => MENU_CALLBACK,
-    'page callback' => 'persona_logout',
-    'access callback' => TRUE,
-  );
   $items['admin/config/people/persona'] = array(
     'title' => "Persona settings",
     'type' => MENU_NORMAL_ITEM,
@@ -68,15 +63,6 @@ function persona_menu_alter(&$items) {
     unset($items['user/register']);
     unset($items['user/password']);
   }
-}
-
-/**
- * Menu callback to logout and end a user session.
- */
-function persona_logout() {
-  global $user;
-  session_destroy();
-  print "";
 }
 
 /**
