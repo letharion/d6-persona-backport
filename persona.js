@@ -7,6 +7,8 @@
   Drupal.behaviors.persona = {
     attach:function () {
       $('.persona-login').click(function (e) {
+        // Remove focus from the button so it doesn't look weird.
+        $('.persona-login').blur();
         e.preventDefault();
         e.stopPropagation();
         // Need to check if logo is available for our use.
