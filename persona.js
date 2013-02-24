@@ -26,7 +26,6 @@
         e.preventDefault();
         e.stopPropagation();
         navigator.id.logout();
-        window.location = Drupal.settings.persona.site.logout;
       });
       Drupal.persona.watch();
       Drupal.persona.adminFormEnhance();
@@ -74,7 +73,7 @@
         });
       },
       onlogout:function () {
-        Drupal.persona.debug ? console.log("Logging out.") : "";
+        window.location = Drupal.settings.persona.site.logout;
       }
     });
   }
