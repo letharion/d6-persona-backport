@@ -9,25 +9,33 @@
  */
 function persona_init() {
   global $user;
-  // Include the Persona JavaScript library at the bottom of the page body.
+  // Add JavaScript settings.
+  if ($user->uid == 0) {
+    // The browser is not logged in.
+    $settings = array(
+      // Token to prevent login CSRF.
+      'token' => persona_csrf_token(),
+      // Add site name to display on Persona form.
+      'site_name' => variable_get('site_name'),
+    );
+    // Site logo can only be displayed on Persona login form if it can be served
+    // over HTTPS.
+    if (!empty($_SERVER['HTTPS']) && theme_get_setting('logo') != '') {
+      $settings['site_logo'] = theme_get_setting('logo');
+    }
+  }
+  else {
+    // The browser is logged in - provide the user's email.
+    $settings = array(
+      'email' => $user->mail,
+    );
+  }
+  drupal_add_js(array('persona' => $settings), "setting");
+  // Include the Persona JavaScript library at the bottom of the body.
   drupal_add_js('https://login.persona.org/include.js', array(
     'type' => 'external',
     'scope' => 'footer',
   ));
-  // Add user email so Persona is aware of loggedInUser.
-  if (!isset($user->mail)) {
-    $user->mail = NULL;
-  }
-  drupal_add_js(array('persona' => array('user' => array('mail' => $user->mail))), "setting");
-  // Add token to help authenticate user actions.
-  drupal_add_js(array('persona' => array('token' => persona_get_token('persona-secure-token'))), "setting");
-  // Add site name to display on Persona form.
-  drupal_add_js(array('persona' => array('site' => array("name" => variable_get('site_name')))), "setting");
-  // Add logo to Persona form if HTTPS is available.
-  // WILL NOT WORK without HTTPS.
-  if (!empty($_SERVER['HTTPS']) && theme_get_setting('logo') != "") {
-    drupal_add_js(array('persona' => array("site" => array('logo' => theme_get_setting('logo')))), "setting");
-  }
 }
 
 /**
@@ -128,7 +136,7 @@ function persona_verify() {
   }
 
   // Check token.
-  if (isset($_POST['assertion']) && isset($_POST['token']) && ($_POST['token'] == persona_get_token('persona-secure-token'))) {
+  if (isset($_POST['assertion']) && isset($_POST['token']) && ($_POST['token'] == persona_csrf_token())) {
     $assertion = check_plain($_POST['assertion']);
   }
   else {
@@ -240,19 +248,14 @@ function persona_link() {
 }
 
 /**
- * Creates a secure token for this user.
- *
- * @param string $value
- *   Seed to use to generate the token.
+ * Creates a secure token for preventing Login CSRF.
  *
  * @return string
  *   Secure token.
  *
  * @see drupal_get_token()
+ * @see http://www.adambarth.com/papers/2008/barth-jackson-mitchell-b.pdf
  */
-function persona_get_token($value = '') {
-  if (user_is_logged_in()) {
-    return drupal_get_token($value);
-  }
-  return drupal_hmac_base64($value, session_api_get_sid() . drupal_get_private_key() . drupal_get_hash_salt());
+function persona_csrf_token() {
+  return drupal_hmac_base64('persona-csrf-token', session_api_get_sid() . drupal_get_private_key() . drupal_get_hash_salt());
 }

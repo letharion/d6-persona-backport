@@ -8,18 +8,10 @@
         $('.persona-login').blur();
         e.preventDefault();
         e.stopPropagation();
-        // Need to check if logo is available for our use.
-        if (typeof Drupal.settings.persona.site.logo == "undefined") {
-          navigator.id.request({
-            siteName: Drupal.settings.persona.site.name
-          });
-        }
-        else {
-          navigator.id.request({
-            siteName: Drupal.settings.persona.site.name,
-            siteLogo: Drupal.settings.persona.site.logo
-          });
-        }
+        navigator.id.request({
+          siteName: Drupal.settings.persona.site_name,
+          siteLogo: Drupal.settings.persona.site_logo
+        });
       });
       $('.persona-logout, a[href$="user/logout"], a[href$="index.php?q=user/logout"]').click(function (e) {
         e.preventDefault();
@@ -55,7 +47,7 @@
 
   Drupal.persona.watch = function () {
     navigator.id.watch({
-      loggedInUser: Drupal.settings.persona.user.mail,
+      loggedInUser: Drupal.settings.persona.email,
       onlogin: function (assertion) {
         // Attempt to sign in to the site and then reload the page.
         $.ajax({
@@ -80,7 +72,7 @@
       },
       onlogout: function () {
         // If the browser is signed in to the site, sign it out.
-        if (Drupal.settings.persona.user.mail) {
+        if (Drupal.settings.persona.email) {
           // Sign out asynchronously to avoid an access denied page, as the
           // browser may have already been signed out in a different tab.
           // Redirect to front page.
