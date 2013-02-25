@@ -1,11 +1,8 @@
 (function ($) {
-
-  Drupal.persona = {
-    debug:false
-  }
+  Drupal.persona = {}
 
   Drupal.behaviors.persona = {
-    attach:function () {
+    attach: function () {
       $('.persona-login').click(function (e) {
         // Remove focus from the button so it doesn't look weird.
         $('.persona-login').blur();
@@ -14,13 +11,13 @@
         // Need to check if logo is available for our use.
         if (typeof Drupal.settings.persona.site.logo == "undefined") {
           navigator.id.request({
-            siteName:Drupal.settings.persona.site.name
+            siteName: Drupal.settings.persona.site.name
           });
         }
         else {
           navigator.id.request({
-            siteName:Drupal.settings.persona.site.name,
-            siteLogo:Drupal.settings.persona.site.logo
+            siteName: Drupal.settings.persona.site.name,
+            siteLogo: Drupal.settings.persona.site.logo
           });
         }
       });
@@ -58,38 +55,44 @@
 
   Drupal.persona.watch = function () {
     navigator.id.watch({
-      loggedInUser:Drupal.settings.persona.user.mail,
-      onlogin:function (assertion) {
+      loggedInUser: Drupal.settings.persona.user.mail,
+      onlogin: function (assertion) {
+        // Attempt to sign in to the site and then reload the page.
         $.ajax({
-          type:'POST',
-          url:Drupal.settings.persona.site.personaVerify,
-          data:{
-            assertion:assertion,
-            token:Drupal.settings.persona.token
+          type: 'POST',
+          url: Drupal.settings.basePath + 'persona/verify',
+          data: {
+            assertion: assertion,
+            token: Drupal.settings.persona.token
           },
-          dataType:"json",
-          success:function (res, status, xhr) {
-            Drupal.persona.debug ? console.log(res) : "";
-            Drupal.persona.handleLogin(res);
+          dataType: 'json',
+          error: function (jqXHR, textStatus, errorThrown) {
+            // If signing in failed tell Persona about it, unless the browser
+            // was already signed in.
+            if (jqXHR.status != 409) {
+              navigator.id.logout();
+            }
+          },
+          complete: function (jqXHR, textStatus) {
+            window.location.reload();
           }
         });
       },
-      onlogout:function () {
-        window.location = Drupal.settings.persona.site.logout;
+      onlogout: function () {
+        // If the browser is signed in to the site, sign it out.
+        if (Drupal.settings.persona.user.mail) {
+          // Sign out asynchronously to avoid an access denied page, as the
+          // browser may have already been signed out in a different tab.
+          // Redirect to front page.
+          $.ajax({
+            type: 'GET',
+            url: Drupal.settings.basePath + 'user/logout',
+            complete: function (jqXHR, textStatus) {
+              window.location = Drupal.settings.basePath;
+            }
+          });
+        }
       }
     });
   }
-
-  Drupal.persona.handleLogin = function (res) {
-    if (res.status === "okay") {
-      // User should now be logged in, just refresh the page.
-      window.location.reload();
-    }
-    else if (res.status === "error") {
-      navigator.id.logout();
-      window.location.reload();
-    }
-  }
-
-
 }(jQuery));
