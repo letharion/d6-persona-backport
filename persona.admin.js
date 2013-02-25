@@ -1,6 +1,6 @@
 (function ($) {
   Drupal.behaviors.personaAdmin = {
-    attach: function () {
+    attach: function (context, settings) {
       var login_button = $('#edit-button .persona-login');
       $('#edit-persona-login-button-style').change(function (e) {
         login_button.removeClass("dark orange persona-button");

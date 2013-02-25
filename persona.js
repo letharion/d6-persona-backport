@@ -1,14 +1,14 @@
 (function ($) {
   Drupal.behaviors.persona = {
-    attach: function () {
+    attach: function (context, settings) {
       $('.persona-login').click(function (e) {
         // Remove focus from the button so it doesn't look weird.
         $('.persona-login').blur();
         e.preventDefault();
         e.stopPropagation();
         navigator.id.request({
-          siteName: Drupal.settings.persona.site_name,
-          siteLogo: Drupal.settings.persona.site_logo
+          siteName: settings.persona.site_name,
+          siteLogo: settings.persona.site_logo
         });
       });
       $('.persona-logout, a[href$="user/logout"], a[href$="index.php?q=user/logout"]').click(function (e) {
@@ -17,15 +17,15 @@
         navigator.id.logout();
       });
       navigator.id.watch({
-        loggedInUser: Drupal.settings.persona.email,
+        loggedInUser: settings.persona.email,
         onlogin: function (assertion) {
           // Attempt to sign in to the site and then reload the page.
           $.ajax({
             type: 'POST',
-            url: Drupal.settings.basePath + 'persona/verify',
+            url: settings.basePath + 'persona/verify',
             data: {
               assertion: assertion,
-              token: Drupal.settings.persona.token
+              token: settings.persona.token
             },
             dataType: 'json',
             error: function (jqXHR, textStatus, errorThrown) {
@@ -42,15 +42,15 @@
         },
         onlogout: function () {
           // If the browser is signed in to the site, sign it out.
-          if (Drupal.settings.persona.email) {
+          if (settings.persona.email) {
             // Sign out asynchronously to avoid an access denied page, as the
             // browser may have already been signed out in a different tab.
             // Redirect to front page.
             $.ajax({
               type: 'GET',
-              url: Drupal.settings.basePath + 'user/logout',
+              url: settings.basePath + 'user/logout',
               complete: function (jqXHR, textStatus) {
-                window.location = Drupal.settings.basePath;
+                window.location = settings.basePath;
               }
             });
           }
