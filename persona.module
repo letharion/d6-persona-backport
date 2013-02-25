@@ -10,9 +10,12 @@
 function persona_init() {
   global $user;
   // Add JavaScript settings.
+  $settings = array(
+    'email' => isset($user->mail) ? $user->mail : NULL,
+  );
   if ($user->uid == 0) {
     // The browser is not logged in.
-    $settings = array(
+    $settings += array(
       // Token to prevent login CSRF.
       'token' => persona_csrf_token(),
       // Add site name to display on Persona form.
@@ -23,12 +26,6 @@ function persona_init() {
     if (!empty($_SERVER['HTTPS']) && theme_get_setting('logo') != '') {
       $settings['site_logo'] = theme_get_setting('logo');
     }
-  }
-  else {
-    // The browser is logged in - provide the user's email.
-    $settings = array(
-      'email' => $user->mail,
-    );
   }
   drupal_add_js(array('persona' => $settings), "setting");
   // Include the Persona JavaScript library at the bottom of the body.

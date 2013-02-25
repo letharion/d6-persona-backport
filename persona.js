@@ -41,19 +41,16 @@
           });
         },
         onlogout: function () {
-          // If the browser is signed in to the site, sign it out.
-          if (settings.persona.email) {
-            // Sign out asynchronously to avoid an access denied page, as the
-            // browser may have already been signed out in a different tab.
-            // Redirect to front page.
-            $.ajax({
-              type: 'GET',
-              url: settings.basePath + 'user/logout',
-              complete: function (jqXHR, textStatus) {
-                window.location = settings.basePath;
-              }
-            });
-          }
+          // Sign out asynchronously to avoid an access denied page, as the
+          // browser may have already been signed out in a different tab.
+          // Redirect to front page.
+          $.ajax({
+            type: 'GET',
+            url: settings.basePath + 'user/logout',
+            complete: function (jqXHR, textStatus) {
+              window.location = settings.basePath;
+            }
+          });
         }
       });
     }
