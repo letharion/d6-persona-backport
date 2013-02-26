@@ -35,9 +35,9 @@ function persona_admin_form(array $form, array &$form_state) {
     '#default_value' => variable_get('persona_login_button_style'),
     '#options' => array(
       '' => t("None"),
-      'dark' => t("Black"),
+      'orange' => t("Orange"),
       'blue' => t("Blue"),
-      'orange' => t("Red"),
+      'dark' => t("Dark"),
     ),
   );
   $form['button']['persona_login_button_text'] = array(

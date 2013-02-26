@@ -14,7 +14,7 @@ function persona_install() {
   // Login form settings.
   variable_set('persona_login_display', TRUE);
   variable_set('persona_login_block_display', TRUE);
-  variable_set('persona_login_button_style', 'blue');
+  variable_set('persona_login_button_style', 'orange');
   variable_set('persona_login_button_text', "sign in with your email");
 }
 
