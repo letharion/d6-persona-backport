@@ -119,6 +119,48 @@ function persona_form_alter(array &$form, array &$form_state, $form_id) {
 }
 
 /**
+ * Determines if a user with a specific name already exists.
+ *
+ * @param string $name
+ *   User name to check for.
+ *
+ * @return bool
+ *   TRUE if the name is taken.
+ */
+function _persona_user_name_exists($name) {
+  // Search for a user entity with the supplied name.
+  $query = new EntityFieldQuery;
+  return (bool) $query->entityCondition('entity_type', 'user')
+    ->propertyCondition('name', $name)
+    ->count()
+    ->execute();
+}
+
+/**
+ * Extracts a unique name from an email address.
+ *
+ * @param string $email
+ *   Email address to extract name from.
+ *
+ * @return string
+ *   Unique extracted name. No existing users will have this name.
+ */
+function _persona_extract_user_name($email) {
+  // Extract the local-part from the email address.
+  $name = strtok($email, '@');
+  // Ensure it is unique.
+  if (_persona_user_name_exists($name)) {
+    $i = 2;
+    do {
+      $attempt = $name . '-' . $i++;
+
+    } while (_persona_user_name_exists($attempt));
+    $name = $attempt;
+  }
+  return $name;
+}
+
+/**
  * Callback function to validate the persona assertion.
  */
 function persona_verify() {
@@ -176,7 +218,7 @@ function persona_verify() {
   elseif (variable_get('user_register')) {
     // Need to create an account for this user.
     $fields = array(
-      'name' => $response->email,
+      'name' => _persona_extract_user_name($response->email),
       'mail' => $response->email,
       'pass' => user_password(16),
       'status' => (variable_get('user_register') == USER_REGISTER_VISITORS),
