@@ -91,30 +91,32 @@ function _persona_login_form_alter(array &$form) {
 }
 
 /**
- * Implements hook_form_alter().
+ * Implements hook_form_FORM_ID_alter().
  */
-function persona_form_alter(array &$form, array &$form_state, $form_id) {
-  switch ($form_id) {
-    case "user_profile_form":
-      if (variable_get('persona_takeover_login')) {
-        unset($form['account']['pass']);
-        unset($form['account']['current_pass']);
-        unset($form['account']['current_pass_required_values']);
-        $form['account']['mail']['#description'] .= " " . t("If you change this e-mail after creating an account using Persona, you will have to re-validate your Persona e-mail.");
-      }
-      break;
+function persona_form_user_profile_form_alter(array &$form, array &$form_state, $form_id) {
+  if (variable_get('persona_takeover_login')) {
+    unset($form['account']['pass']);
+    unset($form['account']['current_pass']);
+    unset($form['account']['current_pass_required_values']);
+    $form['account']['mail']['#description'] .= " " . t("If you change this e-mail after creating an account using Persona, you will have to re-validate your Persona e-mail.");
+  }
+}
 
-    case "user_login":
-      _persona_login_form_alter($form);
-      break;
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function persona_form_user_login_alter(array &$form, array &$form_state, $form_id) {
+  _persona_login_form_alter($form);
+}
 
-    case "user_login_block":
-      _persona_login_form_alter($form);
-      if (variable_get('persona_takeover_login')) {
-        // Remove links to disabled menu items.
-        unset($form['links']);
-      }
-      break;
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function persona_form_user_login_block_alter(array &$form, array &$form_state, $form_id) {
+  _persona_login_form_alter($form);
+  if (variable_get('persona_takeover_login')) {
+    // Remove links to disabled menu items.
+    unset($form['links']);
   }
 }
 
