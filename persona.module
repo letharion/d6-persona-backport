@@ -21,6 +21,15 @@ function persona_init() {
       // Add site name to display on Persona form.
       'site_name' => variable_get('site_name'),
     );
+    // Add the legal documents if they are both provided.
+    if ((variable_get('persona_terms_link') != '') &&
+      (variable_get('persona_privacy_link') != ''))
+    {
+      $settings += array(
+        'terms_link' => url(variable_get('persona_terms_link'), array('absolute' => TRUE)),
+        'privacy_link' => url(variable_get('persona_privacy_link'), array('absolute' => TRUE)),
+      );
+    }
     // Site logo can only be displayed on Persona login form if it can be served
     // over HTTPS.
     if (!empty($_SERVER['HTTPS']) && theme_get_setting('logo') != '') {

@@ -61,6 +61,25 @@ function persona_admin_form(array $form, array &$form_state) {
     '#default_value' => variable_get('persona_login_block_display'),
   );
 
+  // Legal Document settings.
+  $form['legal_docs'] = array(
+    '#type' => 'fieldset',
+    '#title' => t("Legal Documents"),
+    '#description' => t("If links to <b>both</b> of these documents are provided, they will appear on the Persona sign in dialog."),
+  );
+  $form['legal_docs']['persona_terms_link'] = array(
+    '#type' => 'textfield',
+    '#title' => t("Terms Of Service"),
+    '#default_value' => variable_get('persona_terms_link'),
+    '#description' => "Link in the form of a local path or an absolute URL.",
+  );
+  $form['legal_docs']['persona_privacy_link'] = array(
+    '#type' => 'textfield',
+    '#title' => t("Privacy Policy"),
+    '#default_value' => variable_get('persona_privacy_link'),
+    '#description' => "Link in the form of a local path or an absolute URL.",
+  );
+
   // Add JavaScript.
   $form['#attached']['js'][] = drupal_get_path('module', 'persona') . '/persona.admin.js';
 

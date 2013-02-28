@@ -30,4 +30,8 @@ function persona_uninstall() {
   variable_del('persona_login_block_display');
   variable_del('persona_login_button_style');
   variable_del('persona_login_button_text');
+
+  // Legal Documents settings.
+  variable_del('persona_terms_link');
+  variable_del('persona_privacy_link');
 }

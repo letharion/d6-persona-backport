@@ -8,7 +8,9 @@
         e.stopPropagation();
         navigator.id.request({
           siteName: settings.persona.site_name,
-          siteLogo: settings.persona.site_logo
+          siteLogo: settings.persona.site_logo,
+          termsOfService: settings.persona.terms_link,
+          privacyPolicy: settings.persona.privacy_link
         });
       });
       $('.persona-logout, a[href$="user/logout"], a[href$="index.php?q=user/logout"]').click(function (e) {
