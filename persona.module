@@ -319,6 +319,34 @@ function persona_link() {
 }
 
 /**
+ * Implements hook_menu_link_alter().
+ */
+function persona_menu_link_alter(array &$item) {
+  // Add persona-logout class to logout menu item.
+  if ($item['link_path'] == 'user/logout') {
+    $item['options']['attributes']['class'][] = 'persona-logout';
+  }
+}
+
+/**
+ * Implements hook_page_alter().
+ */
+function persona_page_alter(array &$page) {
+  // Add a pre-render function to the toolbar.
+  if (isset($page['page_top']['toolbar'])) {
+    $page['page_top']['toolbar']['#pre_render'][] = 'persona_toolbar_pre_render';
+  }
+}
+
+/**
+ * Adds persona-logout class to toolbar logout link.
+ */
+function persona_toolbar_pre_render(array $toolbar) {
+  $toolbar['toolbar_user']['#links']['logout']['attributes']['class'][] = 'persona-logout';
+  return $toolbar;
+}
+
+/**
  * Creates a secure token for preventing Login CSRF.
  *
  * @return string

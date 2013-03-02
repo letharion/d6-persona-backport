@@ -13,7 +13,7 @@
           privacyPolicy: settings.persona.privacy_link
         });
       });
-      $('.persona-logout, a[href$="user/logout"], a[href$="index.php?q=user/logout"]').click(function (e) {
+      $('.persona-logout').click(function (e) {
         e.preventDefault();
         e.stopPropagation();
         navigator.id.logout();
