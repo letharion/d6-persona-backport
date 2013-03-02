@@ -3,7 +3,6 @@ description = Adds Mozilla Persona functionality to the standard user login form
 configure=admin/config/people/persona
 core = 7.x
 
-scripts[] = persona.js
 dependencies[] = session_api
 
 stylesheets[all][] = persona-buttons.css

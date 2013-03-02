@@ -4,11 +4,14 @@
  * Main code file for Persona.
  */
 
-/**
- * Implements hook_init().
- */
-function persona_init() {
+function persona_add_js() {
   global $user;
+  // Make sure the JavaScript only gets added once.
+  $added = &drupal_static(__FUNCTION__);
+  if ($added) {
+    return;
+  }
+  $added = TRUE;
   // Add JavaScript settings.
   $settings = array(
     'email' => isset($user->mail) ? $user->mail : NULL,
@@ -36,12 +39,26 @@ function persona_init() {
       $settings['site_logo'] = theme_get_setting('logo');
     }
   }
-  drupal_add_js(array('persona' => $settings), "setting");
+  drupal_add_js(array('persona' => $settings), 'setting');
+  // Add the Javascript to talk to Persona.
+  drupal_add_js(drupal_get_path('module', 'persona') . '/persona.js', array(
+    'every_page' => TRUE,
+  ));
   // Include the Persona JavaScript library at the bottom of the body.
   drupal_add_js('https://login.persona.org/include.js', array(
     'type' => 'external',
     'scope' => 'footer',
   ));
+}
+
+/**
+ * Implements hook_init().
+ */
+function persona_init() {
+  // If we are signed in with Persona then add the JavaScript to the page.
+  if (!empty($_SESSION['persona_sign_in'])) {
+    persona_add_js();
+  }
 }
 
 /**
@@ -97,6 +114,8 @@ function _persona_login_form_alter(array &$form) {
       '#weight' => 0,
     );
   }
+  // Add the JavaScript to the page.
+  persona_add_js();
 }
 
 /**
@@ -266,6 +285,8 @@ function persona_login_user($account) {
   global $user;
   $user = $account;
   user_login_finalize();
+  // Store in the session the fact that the user signed in with Persona.
+  $_SESSION['persona_sign_in'] = TRUE;
 }
 
 /**
