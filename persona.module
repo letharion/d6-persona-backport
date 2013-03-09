@@ -300,29 +300,20 @@ function persona_login_user($account) {
  * Returns a Persona sign in link.
  */
 function persona_link() {
-  $classes = array("persona-login");
-  switch (variable_get("persona_login_button_style")) {
-    case "dark":
-      $classes[] = "dark ";
-      $classes[] = "persona-button ";
-      break;
+  $classes = array('persona-login');
 
-    case "blue":
-      $classes[] = "persona-button ";
-      break;
-
-    case "orange":
-      $classes[] = "orange ";
-      $classes[] = "persona-button ";
-      break;
-
+  // Add style class.
+  $style = variable_get('persona_login_button_style');
+  if ($style != '') {
+    $classes[] = 'persona-button';
+    $classes[] = $style;
   }
-  $text = variable_get("persona_login_button_text");
-  return l("<span>$text</span>", NULL, array(
-    "attributes" => array("class" => $classes),
-    "fragment" => "persona_login",
-    "html" => TRUE,
-  ));
+
+  $output = '<div style="cursor: pointer;" class="' . implode(' ', $classes) . '"><span>';
+  $output .= variable_get('persona_login_button_text');
+  $output .= '</span></div>';
+
+  return $output;
 }
 
 /**
