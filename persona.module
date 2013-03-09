@@ -11,8 +11,7 @@ function persona_init() {
   global $user;
   // Is the browser signed in?
   if ($user->uid > 0) {
-    // If the user is not signed in with Persona then do not add any Persona
-    // JavaScript to the page.
+    // If the user is not signed in with Persona then do nothing.
     if (empty($_SESSION['persona_sign_in'])) {
       return;
     }
@@ -57,6 +56,9 @@ function persona_init() {
     'type' => 'external',
     'scope' => 'footer',
   ));
+  // Make sure Internet Explorer is not in "Compatibility Mode".
+  // @see https://developer.mozilla.org/en-US/docs/Persona/Browser_compatibility
+  drupal_add_http_header('X-UA-Compatible', 'IE=Edge');
 }
 
 /**
