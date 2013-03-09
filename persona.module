@@ -193,6 +193,17 @@ function persona_verify() {
   global $base_url;
   global $user;
 
+  // Ensure that the POST request was not made by a <form> being submitted as it
+  // could be a Login XSRF attack. AJAX requests are not susceptible to this
+  // attack as they are protected by CORS.
+  // @see http://en.wikipedia.org/wiki/Cross-origin_resource_sharing
+  // @see http://www.adambarth.com/papers/2008/barth-jackson-mitchell-b.pdf 4.3
+  if (!isset($_SERVER['HTTP_X_REQUESTED_WITH'])) {
+    watchdog('persona', "Non-AJAX verify request made.", array(), WATCHDOG_WARNING);
+    drupal_add_http_header('Status', '401 Unauthorized');
+    return;
+  }
+
   // Check if we are already signed in. Verification may have already happened
   // from another tab in the same browser.
   if ($user->uid > 0) {
