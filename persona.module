@@ -44,6 +44,10 @@ function persona_init() {
     if (!empty($_SERVER['HTTPS']) && theme_get_setting('logo') != '') {
       $settings['site_logo'] = theme_get_setting('logo');
     }
+    // Add button CSS.
+    drupal_add_css(drupal_get_path('module', 'persona') . '/persona-buttons.css', array(
+      'every_page' => TRUE,
+    ));
   }
   // Add JavaScript settings.
   drupal_add_js(array('persona' => $settings), 'setting');

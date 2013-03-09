@@ -80,7 +80,8 @@ function persona_admin_form(array $form, array &$form_state) {
     '#description' => "Link in the form of a local path or an absolute URL.",
   );
 
-  // Add JavaScript.
+  // Add CSS and JavaScript.
+  $form['#attached']['css'][] = drupal_get_path('module', 'persona') . '/persona-buttons.css';
   $form['#attached']['js'][] = drupal_get_path('module', 'persona') . '/persona.admin.js';
 
   $form = system_settings_form($form);
