@@ -205,7 +205,6 @@ function persona_verify() {
   }
   else {
     watchdog('persona', "Bad assertion or token.", array(), WATCHDOG_ERROR);
-    drupal_set_message(t("Sorry, there was a problem signing you in with Persona."), 'error');
     drupal_add_http_header('Status', '401 Unauthorized');
     throw new Exception();
   }
