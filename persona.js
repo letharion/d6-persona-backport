@@ -24,7 +24,7 @@
           // Attempt to sign in to the site and then reload the page.
           $.ajax({
             type: 'POST',
-            url: settings.basePath + 'persona/verify',
+            url: settings.basePath + 'user/persona/sign-in',
             data: {
               assertion: assertion,
               token: settings.persona.token

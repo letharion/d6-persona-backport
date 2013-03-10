@@ -70,9 +70,15 @@ function persona_init() {
  * Implements hook_menu().
  */
 function persona_menu() {
-  $items['persona/verify'] = array(
+  $items['user/persona/sign-in'] = array(
     'type' => MENU_CALLBACK,
-    'page callback' => 'persona_verify',
+    'page callback' => 'persona_sign_in',
+    'delivery callback' => 'drupal_json_output',
+    'access callback' => TRUE,
+  );
+  $items['user/persona/change-email'] = array(
+    'type' => MENU_CALLBACK,
+    'page callback' => 'persona_change_email',
     'delivery callback' => 'drupal_json_output',
     'access callback' => TRUE,
   );
@@ -126,10 +132,10 @@ function _persona_login_form_alter(array &$form) {
  */
 function persona_form_user_profile_form_alter(array &$form, array &$form_state, $form_id) {
   if (variable_get('persona_takeover_login')) {
-    unset($form['account']['pass']);
-    unset($form['account']['current_pass']);
-    unset($form['account']['current_pass_required_values']);
-    $form['account']['mail']['#description'] .= " " . t("If you change this e-mail after creating an account using Persona, you will have to re-validate your Persona e-mail.");
+    $form['account']['mail']['#type'] = 'value';
+    $form['account']['mail']['#value'] = $form['account']['mail']['#default_value'];
+    $form['account']['pass']['#type'] = 'value';
+    $form['account']['current_pass']['#type'] = 'value';
   }
 }
 
@@ -194,30 +200,29 @@ function _persona_extract_user_name($email) {
 }
 
 /**
- * Callback function to validate the persona assertion.
+ * Ensures that a POST request was not made by a <form> being submitted as it
+ * could be a Login XSRF attack. AJAX requests are not susceptible to this
+ * attack as they are protected by CORS.
+ *
+ * @see http://en.wikipedia.org/wiki/Cross-origin_resource_sharing
+ * @see http://www.adambarth.com/papers/2008/barth-jackson-mitchell-b.pdf 4.3
  */
-function persona_verify() {
-  global $base_url;
-  global $user;
-
-  // Ensure that the POST request was not made by a <form> being submitted as it
-  // could be a Login XSRF attack. AJAX requests are not susceptible to this
-  // attack as they are protected by CORS.
-  // @see http://en.wikipedia.org/wiki/Cross-origin_resource_sharing
-  // @see http://www.adambarth.com/papers/2008/barth-jackson-mitchell-b.pdf 4.3
+function persona_check_login_xsrf() {
   if (!isset($_SERVER['HTTP_X_REQUESTED_WITH'])) {
     watchdog('persona', "Non-AJAX verify request made.", array(), WATCHDOG_WARNING);
     drupal_add_http_header('Status', '401 Unauthorized');
-    return;
+    throw new Exception();
   }
+}
 
-  // Check if we are already signed in. Verification may have already happened
-  // from another tab in the same browser.
-  if ($user->uid > 0) {
-    drupal_add_http_header('Status', '409 Conflict');
-    return;
-  }
-
+/**
+ * Verifies the Persona POST data.
+ *
+ * @return string
+ *   Email address that the user has signed in with.
+ */
+function persona_verify() {
+  global $base_url;
   // Check token.
   if (isset($_POST['assertion']) && isset($_POST['token']) && ($_POST['token'] == persona_csrf_token())) {
     $assertion = check_plain($_POST['assertion']);
@@ -226,7 +231,7 @@ function persona_verify() {
     watchdog('persona', "Bad assertion or token.", array(), WATCHDOG_ERROR);
     drupal_set_message(t("Sorry, there was a problem signing you in via Persona."), "error");
     drupal_add_http_header('Status', '401 Unauthorized');
-    return;
+    throw new Exception();
   }
   // Verify the assertion via the persona API.
   $result = drupal_http_request("https://verifier.login.persona.org/verify", array(
@@ -237,24 +242,57 @@ function persona_verify() {
   // HTTP Status should be 200, and response should return 'okay'.
   $response = (object) drupal_json_decode($result->data);
   if ($result->code !== '200' || $response->status !== 'okay') {
-    watchdog('persona', "Bad response: @response; HTTP code: @code", array('@response' => var_export((array) $response, TRUE), '@code' => $result->code), WATCHDOG_ERROR);
-    drupal_set_message(t("Sorry, there was a problem signing you in via Persona."), "error");
+    watchdog('persona', "Bad response: @response; HTTP code: @code", array(
+      '@response' => var_export((array) $response, TRUE),
+      '@code' => $result->code,
+    ), WATCHDOG_ERROR);
     drupal_add_http_header('Status', '502 Bad Gateway');
+    throw new Exception();
+  }
+  return $response->email;
+}
+
+/**
+ * Callback function to validate the persona assertion.
+ */
+function persona_sign_in() {
+  global $user;
+
+  try {
+    persona_check_login_xsrf();
+  }
+  catch (Exception $e) {
     return;
   }
+
+  // Check if we are already signed in. Verification may have already happened
+  // from another tab in the same browser.
+  if ($user->uid > 0) {
+    drupal_add_http_header('Status', '409 Conflict');
+    return;
+  }
+
+  try {
+    $email = persona_verify();
+  }
+  catch (Exception $e) {
+    drupal_set_message(t("Sorry, there was a problem signing you in via Persona."), 'error');
+    return;
+  }
+
   // Check to see if this user already exists.
-  $account = user_load_by_mail($response->email);
+  $account = user_load_by_mail($email);
 
   // If account exists...
   if (!empty($account)) {
     // If user is allowed to log in...
     if ($account->status == 1) {
-      watchdog('persona', "Sign in to existing account by %email successful.", array('%email' => $response->email));
+      watchdog('persona', "Sign in to existing account by %email successful.", array('%email' => $email));
       persona_login_user($account);
       drupal_add_http_header('Status', '200 OK');
     }
     else {
-      watchdog('persona', "Sign in by %email to blocked account denied.", array('%email' => $response->email), WATCHDOG_WARNING);
+      watchdog('persona', "Sign in by %email to blocked account denied.", array('%email' => $email), WATCHDOG_WARNING);
       drupal_set_message(t("You are not allowed to sign in at this time."), "error");
       drupal_add_http_header('Status', '403 Forbidden');
     }
@@ -262,23 +300,23 @@ function persona_verify() {
   elseif (variable_get('user_register')) {
     // Need to create an account for this user.
     $fields = array(
-      'name' => _persona_extract_user_name($response->email),
-      'mail' => $response->email,
+      'name' => _persona_extract_user_name($email),
+      'mail' => $email,
       'pass' => user_password(16),
       'status' => (variable_get('user_register') == USER_REGISTER_VISITORS),
-      'init' => $response->email,
+      'init' => $email,
       'roles' => array(DRUPAL_AUTHENTICATED_RID => 'authenticated user'),
     );
     $account = user_save(array(), $fields);
 
     if (variable_get('user_register') == USER_REGISTER_VISITORS) {
-      watchdog('persona', "Sign in to new account by %email successful.", array('%email' => $response->email));
+      watchdog('persona', "Sign in to new account by %email successful.", array('%email' => $email));
       // Login the user.
       persona_login_user($account);
       drupal_add_http_header('Status', '201 Created');
     }
     else {
-      watchdog('persona', "Account created during sign in by %email pending approval.", array('%email' => $response->email));
+      watchdog('persona', "Account created during sign in by %email pending approval.", array('%email' => $email));
       _user_mail_notify('register_pending_approval', $account);
       drupal_set_message(t("Thank you for applying for an account. Your account is currently pending approval by the site administrator.<br />In the meantime, a welcome message with further instructions has been sent to your e-mail address."));
       drupal_add_http_header('Status', '403 Forbidden');
@@ -286,10 +324,38 @@ function persona_verify() {
   }
   else {
     // Visitors cannot create accounts.
-    watchdog('persona', "Attempted sign in without an account by %email.", array('%email' => $response->email), WATCHDOG_WARNING);
+    watchdog('persona', "Attempted sign in without an account by %email.", array('%email' => $email), WATCHDOG_WARNING);
     drupal_set_message(t("Only administrators are permitted to register new accounts on this website."), "error");
     drupal_add_http_header('Status', '403 Forbidden');
   }
+}
+
+function persona_change_email() {
+  global $user;
+
+  try {
+    persona_check_login_xsrf();
+  }
+  catch (Exception $e) {
+    return;
+  }
+
+  // Make sure we are signed in.
+  if ($user->uid == 0) {
+    drupal_add_http_header('Status', '403 Forbidden');
+    return;
+  }
+
+  try {
+    $email = persona_verify();
+  }
+  catch (Exception $e) {
+    drupal_add_http_header('Status', (string) $e);
+    return;
+  }
+
+  $user->mail = $email;
+  $user->save();
 }
 
 /**
