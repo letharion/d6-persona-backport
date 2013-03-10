@@ -200,22 +200,6 @@ function _persona_extract_user_name($email) {
 }
 
 /**
- * Ensures that a POST request was not made by a <form> being submitted as it
- * could be a Login XSRF attack. AJAX requests are not susceptible to this
- * attack as they are protected by CORS.
- *
- * @see http://en.wikipedia.org/wiki/Cross-origin_resource_sharing
- * @see http://www.adambarth.com/papers/2008/barth-jackson-mitchell-b.pdf 4.3
- */
-function persona_check_login_xsrf() {
-  if (!isset($_SERVER['HTTP_X_REQUESTED_WITH'])) {
-    watchdog('persona', "Non-AJAX verify request made.", array(), WATCHDOG_WARNING);
-    drupal_add_http_header('Status', '401 Unauthorized');
-    throw new Exception();
-  }
-}
-
-/**
  * Verifies the Persona POST data.
  *
  * @return string
@@ -223,6 +207,16 @@ function persona_check_login_xsrf() {
  */
 function persona_verify() {
   global $base_url;
+  // Ensure that a POST request was not made by a <form> being submitted as it
+  // could be a Login XSRF attack. AJAX requests are not susceptible to this
+  // attack as they are protected by CORS.
+  // @see http://en.wikipedia.org/wiki/Cross-origin_resource_sharing
+  // @see http://www.adambarth.com/papers/2008/barth-jackson-mitchell-b.pdf 4.3
+  if (!isset($_SERVER['HTTP_X_REQUESTED_WITH'])) {
+    watchdog('persona', "Non-AJAX verify request made.", array(), WATCHDOG_WARNING);
+    drupal_add_http_header('Status', '401 Unauthorized');
+    throw new Exception();
+  }
   // Check token.
   if (isset($_POST['assertion']) && isset($_POST['token']) && ($_POST['token'] == persona_csrf_token())) {
     $assertion = check_plain($_POST['assertion']);
@@ -257,14 +251,6 @@ function persona_verify() {
  */
 function persona_sign_in() {
   global $user;
-
-  try {
-    persona_check_login_xsrf();
-  }
-  catch (Exception $e) {
-    return;
-  }
-
   // Check if we are already signed in. Verification may have already happened
   // from another tab in the same browser.
   if ($user->uid > 0) {
@@ -333,13 +319,6 @@ function persona_sign_in() {
 function persona_change_email() {
   global $user;
 
-  try {
-    persona_check_login_xsrf();
-  }
-  catch (Exception $e) {
-    return;
-  }
-
   // Make sure we are signed in.
   if ($user->uid == 0) {
     drupal_add_http_header('Status', '403 Forbidden');
@@ -350,7 +329,7 @@ function persona_change_email() {
     $email = persona_verify();
   }
   catch (Exception $e) {
-    drupal_add_http_header('Status', (string) $e);
+    drupal_set_message(t("Sorry, there was a problem changing your account's email address via Persona."), 'error');
     return;
   }
 
