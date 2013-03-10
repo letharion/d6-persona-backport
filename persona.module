@@ -231,7 +231,6 @@ function persona_verify() {
  * Callback function to sign in with Persona.
  */
 function persona_sign_in() {
-  global $user;
   // Check if we are already signed in. Verification may have already happened
   // from another tab in the same browser.
   if (user_is_logged_in()) {
