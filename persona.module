@@ -92,7 +92,7 @@ function persona_menu_alter(&$items) {
 function _persona_login_form_alter(array &$form) {
   if (variable_get('persona_login_display')) {
     $form['persona'] = array(
-      '#markup' => persona_link(),
+      '#markup' => persona_button(),
       '#weight' => -1,
     );
   }
@@ -364,24 +364,37 @@ function _persona_add_settings() {
 }
 
 /**
- * Returns a Persona sign in link.
+ * Generates a Persona button and adds necessary JavaScript settings.
+ *
+ * @param bool $sign_in
+ *   Whether the button should be a Sign In button (default). Otherwise it will
+ *   be a Change Email button.
+ *
+ * @return string
+ *   HTML of generated button.
  */
-function persona_link() {
+function persona_button($sign_in = TRUE) {
+  // Add JavaScript settings.
   _persona_add_settings();
-  $classes = array('persona-login');
-
-  // Add style class.
-  $style = variable_get('persona_login_button_style');
+  // Determine CSS classes and text.
+  if ($sign_in) {
+    $classes = array('persona-sign-in');
+    $text = variable_get('persona_button_text_sign_in');
+  }
+  else {
+    $classes = array('persona-change-email');
+    $text = variable_get('persona_button_text_change_email');
+  }
+  $style = variable_get('persona_button_style');
   if ($style != '') {
     $classes[] = 'persona-button';
     $classes[] = $style;
   }
-
-  $output = '<div style="cursor: pointer;" class="' . implode(' ', $classes) . '"><span>';
-  $output .= variable_get('persona_login_button_text');
-  $output .= '</span></div>';
-
-  return $output;
+  // Generate HTML.
+  $html = '<div style="cursor: pointer;" class="' . implode(' ', $classes) . '"><span>';
+  $html .= check_plain($text);
+  $html .= '</span></div>';
+  return $html;
 }
 
 /**
@@ -421,7 +434,7 @@ function persona_user_view($account) {
     return;
   }
   $account->content['persona'] = array(
-    '#markup' => persona_link(),
+    '#markup' => persona_button(FALSE),
   );
   $account->content['#attached']['css'][] = drupal_get_path('module', 'persona') . '/persona-buttons.css';
 }

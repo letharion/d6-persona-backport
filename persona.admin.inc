@@ -25,14 +25,14 @@ function persona_admin_form(array $form, array &$form_state) {
   );
 
   // Button settings.
-  $form['button'] = array(
+  $form['buttons'] = array(
     '#type' => 'fieldset',
-    '#title' => t("Sign in button"),
+    '#title' => t("Buttons"),
   );
-  $form['button']['persona_login_button_style'] = array(
+  $form['buttons']['persona_button_style'] = array(
     '#type' => 'select',
     '#title' => t("Style"),
-    '#default_value' => variable_get('persona_login_button_style'),
+    '#default_value' => variable_get('persona_button_style'),
     '#options' => array(
       '' => t("None"),
       'orange' => t("Orange"),
@@ -40,22 +40,32 @@ function persona_admin_form(array $form, array &$form_state) {
       'dark' => t("Dark"),
     ),
   );
-  $form['button']['persona_login_button_text'] = array(
+  $form['buttons']['persona_button_text_sign_in'] = array(
     '#type' => 'textfield',
-    '#title' => t("Text"),
-    '#default_value' => variable_get('persona_login_button_text'),
+    '#title' => t("Sign In Button Text"),
+    '#default_value' => variable_get('persona_button_text_sign_in'),
   );
-  $form['button']['person_button_preview'] = array(
+  $form['buttons']['persona_sign_in_button_preview'] = array(
     '#type' => 'item',
-    '#title' => t("Preview"),
-    '#markup' => persona_link(),
+    '#title' => t("Sign In Button Preview"),
+    '#markup' => persona_button(),
   );
-  $form['button']['persona_login_display'] = array(
+  $form['buttons']['persona_button_text_change_email'] = array(
+    '#type' => 'textfield',
+    '#title' => t("Change Email Button Text"),
+    '#default_value' => variable_get('persona_button_text_change_email'),
+  );
+  $form['buttons']['persona_change_email_button_preview'] = array(
+    '#type' => 'item',
+    '#title' => t("Change Email Button Preview"),
+    '#markup' => persona_button(FALSE),
+  );
+  $form['buttons']['persona_login_display'] = array(
     '#type' => 'checkbox',
     '#title' => t('Display on login form'),
     '#default_value' => variable_get('persona_login_display'),
   );
-  $form['button']['persona_login_block_display'] = array(
+  $form['buttons']['persona_login_block_display'] = array(
     '#type' => 'checkbox',
     '#title' => t('Display on login block'),
     '#default_value' => variable_get('persona_login_block_display'),
@@ -95,14 +105,18 @@ function persona_admin_form(array $form, array &$form_state) {
  * Implements hook_FORM_ID_validate().
  */
 function persona_admin_form_validate(array $form, array &$form_state) {
-  $v = $form_state['values'];
   // Make sure buttons have text.
-  if (empty($v['persona_login_button_text'])) {
-    form_set_error('persona_login_button_text', t("Please enter some text for your login button"));
+  if ($form_state['values']['persona_button_text_sign_in'] == '') {
+    form_set_error('persona_button_text_sign_in', t("Please enter some text for your Sign In button"));
+  }
+  if ($form_state['values']['persona_button_text_change_email'] == '') {
+    form_set_error('persona_button_text_change_email', t("Please enter some text for your Change Email button"));
   }
   // Need to check and see if the admin has disabled the login button,
   // but enabled the takeover.
-  if ($v['persona_takeover_login'] && !($v['persona_login_display'] || $v['persona_login_block_display'])) {
+  if ($form_state['values']['persona_takeover_login'] &&
+    !($form_state['values']['persona_login_display'] || $form_state['values']['persona_login_block_display']))
+  {
     form_set_error('persona_login_display', t("To use Persona as the only login method, it must be shown on the login form, or block."));
   }
 }

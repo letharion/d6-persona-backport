@@ -1,17 +1,25 @@
 (function ($) {
   Drupal.behaviors.persona = {
     attach: function (context, settings) {
-      $('.persona-login').click(function (e) {
-        // Remove focus from the button so it doesn't look weird.
-        $('.persona-login').blur();
-        e.preventDefault();
-        e.stopPropagation();
+      settings.persona.url = settings.basePath + 'user/persona/sign-in';
+      function request() {
         navigator.id.request({
           siteName: settings.persona.site_name,
           siteLogo: settings.persona.site_logo,
           termsOfService: settings.persona.terms_link,
           privacyPolicy: settings.persona.privacy_link
         });
+      }
+      $('.persona-sign-in').click(function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        request();
+      });
+      $('.persona-change-email').click(function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        settings.persona.url = settings.basePath + 'user/persona/change-email';
+        request();
       });
       $('.persona-logout').click(function (e) {
         e.preventDefault();
@@ -24,7 +32,7 @@
           // Attempt to sign in to the site and then reload the page.
           $.ajax({
             type: 'POST',
-            url: settings.basePath + 'user/persona/sign-in',
+            url: settings.persona.url,
             data: {
               assertion: assertion,
               token: settings.persona.token
