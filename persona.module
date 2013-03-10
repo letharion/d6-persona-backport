@@ -302,24 +302,26 @@ function persona_sign_in() {
  */
 function persona_change_email() {
   global $user;
-  // Make sure we are signed in.
-  if (!user_is_logged_in()) {
-    drupal_add_http_header('Status', '403 Forbidden');
-    return;
+  // Make sure the browser is signed in.
+  if (user_is_logged_in()) {
+    try {
+      // Obtain email address from Persona.
+      $user->mail = persona_verify();
+      // Update account's email address.
+      user_save($user);
+      watchdog('persona', "%name changed email address to %email.", array(
+        '%name' => $user->name,
+        '%email' => $user->mail,
+      ));
+      drupal_set_message(t("Your email address has been changed to %email.", array('%email' => $user->mail)));
+    }
+    catch (Exception $e) {
+      drupal_set_message(t("Sorry, there was a problem changing your email address with Persona."), 'error');
+    }
   }
-  try {
-    // Obtain email address from Persona.
-    $user->mail = persona_verify();
-    // Update account's email address.
-    user_save($user);
-    watchdog('persona', "%name changed email address to %email.", array(
-      '%name' => $user->name,
-      '%email' => $user->mail,
-    ));
-    drupal_set_message(t("Your email address has been changed to %email.", array('%email' => $user->mail)));
-  }
-  catch (Exception $e) {
-    drupal_set_message(t("Sorry, there was a problem changing your email address with Persona."), 'error');
+  else {
+    // The user probably clicked "This is not me" - try to sign them in.
+    persona_sign_in();
   }
 }
 
