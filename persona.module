@@ -433,13 +433,15 @@ function persona_toolbar_pre_render(array $toolbar) {
  * Implements hook_user_view().
  */
 function persona_user_view($account) {
-  // If the user is not signed in with Persona then do nothing.
-  if (!isset($_SESSION['persona_sign_in'])) {
+  global $user;
+  // If the user is not signed in with Persona or a different user is being
+  // displayed then do nothing.
+  if (!isset($_SESSION['persona_sign_in']) || ($account->uid != $user->uid)) {
     return;
   }
-  $account->content['persona'] = array(
-    '#markup' => persona_button(FALSE),
-  );
+  // Add the Change Email button.
+  $account->content['persona'] = array('#markup' => persona_button(FALSE));
+  // Add the button CSS.
   $account->content['#attached']['css'][] = drupal_get_path('module', 'persona') . '/persona-buttons.css';
 }
 
