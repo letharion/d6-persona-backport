@@ -307,21 +307,20 @@ function persona_change_email() {
     drupal_add_http_header('Status', '403 Forbidden');
     return;
   }
-  // Obtain email address from Persona.
   try {
+    // Obtain email address from Persona.
     $user->mail = persona_verify();
+    // Update account's email address.
+    user_save($user);
+    watchdog('persona', "%name changed email address to %email.", array(
+      '%name' => $user->name,
+      '%email' => $user->mail,
+    ));
+    drupal_set_message(t("Your email address has been changed to %email.", array('%email' => $user->mail)));
   }
   catch (Exception $e) {
     drupal_set_message(t("Sorry, there was a problem changing your email address with Persona."), 'error');
-    return;
   }
-  // Update account's email address.
-  user_save($user);
-  watchdog('persona', "%name changed email address to %email.", array(
-    '%name' => $user->name,
-    '%email' => $user->mail,
-  ));
-  drupal_set_message(t("Your email address has been changed to %email.", array('%email' => $user->mail)));
 }
 
 /**
