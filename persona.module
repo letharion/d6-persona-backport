@@ -9,6 +9,10 @@
  */
 function persona_init() {
   global $user;
+  // Make sure Internet Explorer is not in "Compatibility Mode". For
+  // consistency, this is done even when not using Persona.
+  // @see https://developer.mozilla.org/en-US/docs/Persona/Browser_compatibility
+  drupal_add_http_header('X-UA-Compatible', 'IE=Edge');
   // Is the browser signed in?
   if ($user->uid > 0) {
     // If the user is not signed in with Persona then do nothing.
@@ -60,9 +64,6 @@ function persona_init() {
     'type' => 'external',
     'scope' => 'footer',
   ));
-  // Make sure Internet Explorer is not in "Compatibility Mode".
-  // @see https://developer.mozilla.org/en-US/docs/Persona/Browser_compatibility
-  drupal_add_http_header('X-UA-Compatible', 'IE=Edge');
 }
 
 /**
