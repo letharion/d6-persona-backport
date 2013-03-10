@@ -14,7 +14,7 @@ function persona_init() {
   // @see https://developer.mozilla.org/en-US/docs/Persona/Browser_compatibility
   drupal_add_http_header('X-UA-Compatible', 'IE=Edge');
   // Is the browser signed in?
-  if ($user->uid > 0) {
+  if (user_is_logged_in()) {
     // If the user is not signed in with Persona then do nothing.
     if (!isset($_SESSION['persona_sign_in'])) {
       return;
@@ -29,25 +29,7 @@ function persona_init() {
       // Tell Persona the browser is not signed in to this site, otherwise it
       // will issue a sign out.
       'email' => NULL,
-      // Token to prevent login CSRF.
-      'token' => persona_csrf_token(),
-      // Add site name to display on Persona form.
-      'site_name' => variable_get('site_name'),
     );
-    // Add the legal documents if they are both provided.
-    if ((variable_get('persona_terms_link') != '') &&
-      (variable_get('persona_privacy_link') != ''))
-    {
-      $settings += array(
-        'terms_link' => url(variable_get('persona_terms_link'), array('absolute' => TRUE)),
-        'privacy_link' => url(variable_get('persona_privacy_link'), array('absolute' => TRUE)),
-      );
-    }
-    // Site logo can only be displayed on Persona login form if it can be served
-    // over HTTPS.
-    if (!empty($_SERVER['HTTPS']) && theme_get_setting('logo') != '') {
-      $settings['site_logo'] = theme_get_setting('logo');
-    }
     // Add button CSS.
     drupal_add_css(drupal_get_path('module', 'persona') . '/persona-buttons.css', array(
       'every_page' => TRUE,
@@ -253,7 +235,7 @@ function persona_sign_in() {
   global $user;
   // Check if we are already signed in. Verification may have already happened
   // from another tab in the same browser.
-  if ($user->uid > 0) {
+  if (user_is_logged_in()) {
     drupal_add_http_header('Status', '409 Conflict');
     return;
   }
@@ -320,7 +302,7 @@ function persona_change_email() {
   global $user;
 
   // Make sure we are signed in.
-  if ($user->uid == 0) {
+  if (!user_is_logged_in()) {
     drupal_add_http_header('Status', '403 Forbidden');
     return;
   }
@@ -334,7 +316,9 @@ function persona_change_email() {
   }
 
   $user->mail = $email;
-  $user->save();
+  user_save($user);
+  watchdog('persona', "Email changed to %email.", array('%email' => $email));
+  drupal_set_message(t("Email changed."));
 }
 
 /**
@@ -348,10 +332,42 @@ function persona_login_user($account) {
   $_SESSION['persona_sign_in'] = TRUE;
 }
 
+function _persona_add_settings() {
+  // Make sure the settings only get added once.
+  $added = &drupal_static(__FUNCTION__);
+  if ($added) {
+    return;
+  }
+  $settings = array(
+    // Token to prevent login CSRF.
+    'token' => persona_csrf_token(),
+    // Add site name to display on Persona form.
+    'site_name' => variable_get('site_name'),
+  );
+  // Add the legal documents if they are both provided.
+  if ((variable_get('persona_terms_link') != '') &&
+    (variable_get('persona_privacy_link') != ''))
+  {
+    $settings += array(
+      'terms_link' => url(variable_get('persona_terms_link'), array('absolute' => TRUE)),
+      'privacy_link' => url(variable_get('persona_privacy_link'), array('absolute' => TRUE)),
+    );
+  }
+  // Site logo can only be displayed on Persona login form if it can be served
+  // over HTTPS.
+  if (!empty($_SERVER['HTTPS']) && theme_get_setting('logo') != '') {
+    $settings['site_logo'] = theme_get_setting('logo');
+  }
+  // Add JavaScript settings.
+  drupal_add_js(array('persona' => $settings), 'setting');
+  $added = TRUE;
+}
+
 /**
  * Returns a Persona sign in link.
  */
 function persona_link() {
+  _persona_add_settings();
   $classes = array('persona-login');
 
   // Add style class.
