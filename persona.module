@@ -16,7 +16,7 @@ function persona_init() {
   // Is the browser signed in?
   if ($user->uid > 0) {
     // If the user is not signed in with Persona then do nothing.
-    if (empty($_SESSION['persona_sign_in'])) {
+    if (!isset($_SESSION['persona_sign_in'])) {
       return;
     }
     $settings = array(
@@ -394,6 +394,20 @@ function persona_page_alter(array &$page) {
 function persona_toolbar_pre_render(array $toolbar) {
   $toolbar['toolbar_user']['#links']['logout']['attributes']['class'][] = 'persona-logout';
   return $toolbar;
+}
+
+/**
+ * Implements hook_user_view().
+ */
+function persona_user_view($account) {
+  // If the user is not signed in with Persona then do nothing.
+  if (!isset($_SESSION['persona_sign_in'])) {
+    return;
+  }
+  $account->content['persona'] = array(
+    '#markup' => persona_link(),
+  );
+  $account->content['#attached']['css'][] = drupal_get_path('module', 'persona') . '/persona-buttons.css';
 }
 
 /**
