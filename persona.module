@@ -205,7 +205,7 @@ function persona_verify() {
   }
   else {
     watchdog('persona', "Bad assertion or token.", array(), WATCHDOG_ERROR);
-    drupal_set_message(t("Sorry, there was a problem signing you in via Persona."), "error");
+    drupal_set_message(t("Sorry, there was a problem signing you in with Persona."), 'error');
     drupal_add_http_header('Status', '401 Unauthorized');
     throw new Exception();
   }
@@ -229,7 +229,7 @@ function persona_verify() {
 }
 
 /**
- * Callback function to validate the persona assertion.
+ * Callback function to sign in with Persona.
  */
 function persona_sign_in() {
   global $user;
@@ -239,12 +239,12 @@ function persona_sign_in() {
     drupal_add_http_header('Status', '409 Conflict');
     return;
   }
-
+  // Obtain email address from Persona.
   try {
     $email = persona_verify();
   }
   catch (Exception $e) {
-    drupal_set_message(t("Sorry, there was a problem signing you in via Persona."), 'error');
+    drupal_set_message(t("Sorry, there was a problem signing you in with Persona."), 'error');
     return;
   }
 
@@ -261,7 +261,7 @@ function persona_sign_in() {
     }
     else {
       watchdog('persona', "Sign in by %email to blocked account denied.", array('%email' => $email), WATCHDOG_WARNING);
-      drupal_set_message(t("You are not allowed to sign in at this time."), "error");
+      drupal_set_message(t("You are not allowed to sign in at this time."), 'error');
       drupal_add_http_header('Status', '403 Forbidden');
     }
   }
@@ -293,32 +293,36 @@ function persona_sign_in() {
   else {
     // Visitors cannot create accounts.
     watchdog('persona', "Attempted sign in without an account by %email.", array('%email' => $email), WATCHDOG_WARNING);
-    drupal_set_message(t("Only administrators are permitted to register new accounts on this website."), "error");
+    drupal_set_message(t("Only administrators are permitted to register new accounts on this website."), 'error');
     drupal_add_http_header('Status', '403 Forbidden');
   }
 }
 
+/**
+ * Callback function to change email address with Persona.
+ */
 function persona_change_email() {
   global $user;
-
   // Make sure we are signed in.
   if (!user_is_logged_in()) {
     drupal_add_http_header('Status', '403 Forbidden');
     return;
   }
-
+  // Obtain email address from Persona.
   try {
-    $email = persona_verify();
+    $user->mail = persona_verify();
   }
   catch (Exception $e) {
-    drupal_set_message(t("Sorry, there was a problem changing your account's email address via Persona."), 'error');
+    drupal_set_message(t("Sorry, there was a problem changing your email address with Persona."), 'error');
     return;
   }
-
-  $user->mail = $email;
+  // Update account's email address.
   user_save($user);
-  watchdog('persona', "Email changed to %email.", array('%email' => $email));
-  drupal_set_message(t("Email changed."));
+  watchdog('persona', "%name changed email address to %email.", array(
+    '%name' => $user->name,
+    '%email' => $user->mail,
+  ));
+  drupal_set_message(t("Your email address has been changed to %email.", array('%email' => $user->mail)));
 }
 
 /**
