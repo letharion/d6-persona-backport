@@ -252,7 +252,8 @@ function _persona_existing_account_sign_in($account) {
  */
 function persona_sign_in() {
   // Check if we are already signed in. Verification may have already happened
-  // from another tab in the same browser.
+  // from another tab in the same browser, or account email address may be
+  // being changed in another tab.
   if (user_is_logged_in()) {
     drupal_add_http_header('Status', '409 Conflict');
     return;
