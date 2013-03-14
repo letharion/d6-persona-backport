@@ -284,17 +284,19 @@ function persona_sign_in() {
     catch (Exception $e) {}
   }
   elseif (variable_get('user_register')) {
-    // Need to create an account for this user.
+    // Create an account for this user.
     $fields = array(
       'name' => _persona_extract_user_name($email),
-      'mail' => $email,
       'pass' => user_password(16),
+      'mail' => $email,
+      'access' => REQUEST_TIME,
       'status' => (variable_get('user_register') == USER_REGISTER_VISITORS),
       'init' => $email,
-      'roles' => array(DRUPAL_AUTHENTICATED_RID => 'authenticated user'),
     );
-    $account = user_save(array(), $fields);
-
+    $account = user_save(drupal_anonymous_user(), $fields);
+    // Reload the account to get full object and prevent warnings.
+    $account = user_load($account->uid);
+    // Can new accounts be signed into without approval?
     if (variable_get('user_register') == USER_REGISTER_VISITORS) {
       watchdog('persona', "Sign in to new account by %email successful.", array('%email' => $email));
       // Login the user.
