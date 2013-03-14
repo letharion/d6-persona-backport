@@ -196,8 +196,9 @@ function _persona_extract_user_name($email) {
 function persona_verify() {
   global $base_url;
   // Ensure that a POST request was not made by a <form> being submitted as it
-  // could be a Login XSRF attack. AJAX requests are not susceptible to this
-  // attack as they are protected by CORS.
+  // could be a Login XSRF attack. Checking for the mere presence of a
+  // non-standard HTTP header is sufficient to guarantee that the request was
+  // made with AJAX and therefore is protected by CORS.
   // @see http://en.wikipedia.org/wiki/Cross-origin_resource_sharing
   // @see http://www.adambarth.com/papers/2008/barth-jackson-mitchell-b.pdf 4.3
   if (!isset($_SERVER['HTTP_X_REQUESTED_WITH'])) {
@@ -205,32 +206,39 @@ function persona_verify() {
     drupal_add_http_header('Status', '401 Unauthorized');
     throw new Exception();
   }
-  // Check token.
-  if (isset($_POST['assertion']) && isset($_POST['token']) && ($_POST['token'] == persona_csrf_token())) {
-    $assertion = check_plain($_POST['assertion']);
-  }
-  else {
-    watchdog('persona', "Bad assertion or token.", array(), WATCHDOG_ERROR);
+  // Ensure assertion was supplied.
+  if (!isset($_POST['assertion'])) {
+    watchdog('persona', "Assertion missing.", array(), WATCHDOG_WARNING);
     drupal_add_http_header('Status', '401 Unauthorized');
     throw new Exception();
   }
-  // Verify the assertion via the persona API.
-  $result = drupal_http_request("https://verifier.login.persona.org/verify", array(
-    "method" => "POST",
-    'headers' => array('Content-Type' => 'application/x-www-form-urlencoded'),
-    "data" => "assertion=$assertion&audience=$base_url",
+  // Check XSRF token.
+  if (!isset($_POST['token']) || ($_POST['token'] != persona_xsrf_token())) {
+    watchdog('persona', "Bad XSRF token.", array(), WATCHDOG_WARNING);
+    drupal_add_http_header('Status', '401 Unauthorized');
+    throw new Exception();
+  }
+  // Verify assertion with Mozilla's Remote Verification API.
+  $result = (array) drupal_http_request('https://verifier.login.persona.org/verify', array(
+    'method' => 'POST',
+    'headers' => array('Content-Type' => 'application/json'),
+    'data' => drupal_json_encode(array(
+      'assertion' => $_POST['assertion'],
+      'audience' => $base_url,
+    )),
   ));
-  // HTTP Status should be 200, and response should return 'okay'.
-  $response = (object) drupal_json_decode($result->data);
-  if ($result->code !== '200' || $response->status !== 'okay') {
-    watchdog('persona', "Bad response: @response; HTTP code: @code", array(
-      '@response' => var_export((array) $response, TRUE),
-      '@code' => $result->code,
+  // HTTP status should be 200, and verification status should be 'okay'.
+  $response = drupal_json_decode($result['data']);
+  if (($result['code'] != 200) || !isset($response['status']) || ($response['status'] != 'okay')) {
+    watchdog('persona', "Bad response: @response; HTTP status: @code", array(
+      '@response' => var_export($response, TRUE),
+      '@code' => $result['code'],
     ), WATCHDOG_ERROR);
     drupal_add_http_header('Status', '502 Bad Gateway');
     throw new Exception();
   }
-  return $response->email;
+  // Return email address obtained from assertion.
+  return $response['email'];
 }
 
 /**
@@ -384,8 +392,8 @@ function _persona_add_settings() {
     return;
   }
   $settings = array(
-    // Token to prevent login CSRF.
-    'token' => persona_csrf_token(),
+    // Token to prevent login XSRF.
+    'token' => persona_xsrf_token(),
     // Add site name to display on Persona form.
     'siteName' => variable_get('site_name'),
   );
@@ -487,7 +495,7 @@ function persona_user_view($account) {
 }
 
 /**
- * Creates a secure token for preventing Login CSRF.
+ * Creates a secure token for preventing Login XSRF.
  *
  * @return string
  *   Secure token.
@@ -495,6 +503,6 @@ function persona_user_view($account) {
  * @see drupal_get_token()
  * @see http://www.adambarth.com/papers/2008/barth-jackson-mitchell-b.pdf
  */
-function persona_csrf_token() {
-  return drupal_hmac_base64('persona-csrf-token', session_api_get_sid() . drupal_get_private_key() . drupal_get_hash_salt());
+function persona_xsrf_token() {
+  return drupal_hmac_base64('persona-xsrf-token', session_api_get_sid() . drupal_get_private_key() . drupal_get_hash_salt());
 }
