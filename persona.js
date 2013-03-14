@@ -38,6 +38,8 @@ Drupal.behaviors.persona = {
 
     // Define default sign in callback path.
     var signInPath = 'user/persona/sign-in';
+    // Sign out should only redirect to home in the tab where it was actioned.
+    var goHomeOnSignOut = false;
 
     // Attach to buttons.
     $('.persona-sign-in').click(function (e) {
@@ -55,6 +57,8 @@ Drupal.behaviors.persona = {
     $('.persona-logout').click(function (e) {
       e.preventDefault();
       e.stopPropagation();
+      // Make this tab redirect to home.
+      goHomeOnSignOut = true;
       navigator.id.logout();
     });
     // Register callbacks to be invoked when a user signs in or out.
@@ -100,7 +104,12 @@ Drupal.behaviors.persona = {
             type: 'GET',
             url: relativeUrl('user/logout'),
             complete: function (jqXHR, textStatus) {
-              window.location = settings.basePath;
+              if (goHomeOnSignOut) {
+                window.location = settings.basePath;
+              }
+              else {
+                window.location.reload();
+              }
             }
           });
         }
