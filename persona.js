@@ -1,15 +1,44 @@
 (function ($) {
   Drupal.behaviors.persona = {
     attach: function (context, settings) {
-      settings.persona.url = settings.basePath + 'user/persona/sign-in';
+
+      /**
+       * Requests a signed identity assertion from the user.
+       */
       function request() {
         navigator.id.request({
-          siteName: settings.persona.site_name,
-          siteLogo: settings.persona.site_logo,
-          termsOfService: settings.persona.terms_link,
-          privacyPolicy: settings.persona.privacy_link
+          siteName: settings.persona.siteName,
+          siteLogo: settings.persona.siteLogo,
+          termsOfService: settings.persona.termsOfService,
+          privacyPolicy: settings.persona.privacyPolicy
         });
       }
+
+      /**
+       * Generates a relative URL for the given Drupal path. Optionally adds
+       * destination path that Drupal will redirect to if a form is submitted.
+       *
+       * @param string path
+       * @param string destination
+       *
+       * @return string
+       *   Relative URL.
+       */
+      function relativeUrl(path, destination) {
+        var url = settings.basePath;
+        url += settings.persona.cleanUrls ? '' : '?q=';
+        url += path;
+        if (destination) {
+          url += settings.persona.cleanUrls ? '?' : '&';
+          url += 'destination=' + Drupal.encodePath(destination);
+        }
+        return url;
+      }
+
+      // Define default sign in callback path.
+      var signInPath = 'user/persona/sign-in';
+
+      // Attach to buttons.
       $('.persona-sign-in').click(function (e) {
         e.preventDefault();
         e.stopPropagation();
@@ -18,7 +47,8 @@
       $('.persona-change-email').click(function (e) {
         e.preventDefault();
         e.stopPropagation();
-        settings.persona.url = settings.basePath + 'user/persona/change-email';
+        // Override sign in callback path to change email.
+        signInPath = 'user/persona/change-email';
         request();
       });
       $('.persona-logout').click(function (e) {
@@ -26,13 +56,14 @@
         e.stopPropagation();
         navigator.id.logout();
       });
+      // Register callbacks to be invoked when a user signs in or out.
       navigator.id.watch({
         loggedInUser: settings.persona.email,
         onlogin: function (assertion) {
           // Attempt to sign in to the site and then reload the page.
           $.ajax({
             type: 'POST',
-            url: settings.persona.url,
+            url: relativeUrl(signInPath),
             data: {
               assertion: assertion,
               token: settings.persona.token
@@ -44,9 +75,16 @@
               if (jqXHR.status != 409) {
                 navigator.id.logout();
               }
-            },
-            complete: function (jqXHR, textStatus) {
               window.location.reload();
+            },
+            success: function (uid, textStatus, jqXHR) {
+              // Redirect if uid provided, otherwise just reload the page.
+              if (uid) {
+                window.location = relativeUrl('user/' + uid + '/edit', settings.persona.currentPath);
+              }
+              else {
+                window.location.reload();
+              }
             }
           });
         },
@@ -59,7 +97,7 @@
             // Redirect to front page.
             $.ajax({
               type: 'GET',
-              url: settings.basePath + 'user/logout',
+              url: relativeUrl('user/logout'),
               complete: function (jqXHR, textStatus) {
                 window.location = settings.basePath;
               }

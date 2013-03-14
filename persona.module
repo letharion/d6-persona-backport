@@ -35,6 +35,12 @@ function persona_init() {
       'every_page' => TRUE,
     ));
   }
+  // Add some settings that core doesn't provide.
+  // @see http://drupal.org/node/1691394
+  $settings += array(
+    'cleanUrls' => variable_get('clean_url'),
+    'currentPath' => current_path(),
+  );
   // Add JavaScript settings.
   drupal_add_js(array('persona' => $settings), 'setting');
   // Add the Javascript to talk to Persona.
@@ -294,6 +300,10 @@ function persona_sign_in() {
       // Login the user.
       persona_login_user($account);
       drupal_add_http_header('Status', '201 Created');
+      // Redirect to account edit page if new accounts are set to do so.
+      if (variable_get('persona_new_account_edit')) {
+        return $account->uid;
+      }
     }
     else {
       watchdog('persona', "Account created during sign in by %email pending approval.", array('%email' => $email));
@@ -375,15 +385,15 @@ function _persona_add_settings() {
     // Token to prevent login CSRF.
     'token' => persona_csrf_token(),
     // Add site name to display on Persona form.
-    'site_name' => variable_get('site_name'),
+    'siteName' => variable_get('site_name'),
   );
   // Add the legal documents if they are both provided.
   if ((variable_get('persona_terms_link') != '') &&
     (variable_get('persona_privacy_link') != ''))
   {
     $settings += array(
-      'terms_link' => url(variable_get('persona_terms_link'), array('absolute' => TRUE)),
-      'privacy_link' => url(variable_get('persona_privacy_link'), array('absolute' => TRUE)),
+      'termsOfService' => url(variable_get('persona_terms_link'), array('absolute' => TRUE)),
+      'privacyPolicy' => url(variable_get('persona_privacy_link'), array('absolute' => TRUE)),
     );
   }
   // Site logo can only be displayed on Persona login form if it can be served

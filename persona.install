@@ -10,6 +10,7 @@
 function persona_install() {
   // General settings.
   variable_set('persona_takeover_login', FALSE);
+  variable_set('persona_new_account_edit', FALSE);
 
   // Login form settings.
   variable_set('persona_login_display', TRUE);
@@ -25,6 +26,7 @@ function persona_install() {
 function persona_uninstall() {
   // General settings.
   variable_del('persona_takeover_login');
+  variable_del('persona_new_account_edit');
 
   // Login form settings.
   variable_del('persona_login_display');
