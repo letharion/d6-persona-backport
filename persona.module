@@ -248,6 +248,20 @@ function persona_verify() {
 }
 
 /**
+ * Signs into an account.
+ *
+ * @param $account
+ *   Account to sign into.
+ */
+function _persona_sign_in($account) {
+  global $user;
+  $user = $account;
+  user_login_finalize();
+  // Store in the session the fact that the user signed in with Persona.
+  $_SESSION['persona_sign_in'] = TRUE;
+}
+
+/**
  * Attempts to sign into an existing account.
  *
  * @param $account
@@ -256,7 +270,7 @@ function persona_verify() {
 function _persona_existing_account_sign_in($account) {
   if ($account->status == 1) {
     watchdog('persona', "Sign into existing account by %email successful.", array('%email' => $account->mail));
-    persona_login_user($account);
+    _persona_sign_in($account);
     drupal_add_http_header('Status', '200 OK');
   }
   else {
@@ -310,11 +324,11 @@ function persona_sign_in() {
     $account = user_save(drupal_anonymous_user(), $fields);
     // Reload the account to get full object and prevent warnings.
     $account = user_load($account->uid);
-    // Can new accounts be signed into without approval?
-    if (variable_get('user_register') == USER_REGISTER_VISITORS) {
+    // Sign into account if it doesn't need approval.
+    if ($account->status) {
       watchdog('persona', "Sign in to new account by %email successful.", array('%email' => $email));
-      // Login the user.
-      persona_login_user($account);
+      // Sign the browser into the account.
+      _persona_sign_in($account);
       drupal_add_http_header('Status', '201 Created');
       // Redirect to account edit page if new accounts are set to do so.
       if (variable_get('persona_new_account_edit')) {
@@ -324,7 +338,7 @@ function persona_sign_in() {
     else {
       watchdog('persona', "Account created during sign in by %email pending approval.", array('%email' => $email));
       _user_mail_notify('register_pending_approval', $account);
-      drupal_set_message(t("Thank you for applying for an account. Your account is currently pending approval by the site administrator.<br />In the meantime, a welcome message with further instructions has been sent to your e-mail address."));
+      drupal_set_message(t("Thank you for applying for an account. Your account is currently pending approval by the site administrator.<br />In the meantime, a welcome message with further instructions has been sent to your email address."));
       drupal_add_http_header('Status', '403 Forbidden');
     }
   }
@@ -378,17 +392,6 @@ function persona_change_email() {
     // when there was another browser tab open on the site. Try to sign them in.
     persona_sign_in();
   }
-}
-
-/**
- * Logs in a user.
- */
-function persona_login_user($account) {
-  global $user;
-  $user = $account;
-  user_login_finalize();
-  // Store in the session the fact that the user signed in with Persona.
-  $_SESSION['persona_sign_in'] = TRUE;
 }
 
 function _persona_add_settings() {
