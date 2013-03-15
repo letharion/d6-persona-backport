@@ -206,7 +206,7 @@ function persona_verify() {
     drupal_add_http_header('Status', '401 Unauthorized');
     throw new Exception();
   }
-  // Get the request variables.
+  // Get request variables.
   $request = drupal_json_decode(file_get_contents('php://input'));
   // Ensure assertion was supplied.
   if (!isset($request['assertion'])) {
@@ -229,8 +229,9 @@ function persona_verify() {
       'audience' => $base_url,
     )),
   ));
-  // HTTP status should be 200, and verification status should be 'okay'.
+  // Get response variables.
   $response = drupal_json_decode($result['data']);
+  // HTTP status should be 200, and verification status should be 'okay'.
   if (($result['code'] != 200) || !isset($response['status']) || ($response['status'] != 'okay')) {
     watchdog('persona', "Bad response: @response; HTTP status: @code", array(
       '@response' => var_export($response, TRUE),
