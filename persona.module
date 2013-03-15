@@ -206,14 +206,16 @@ function persona_verify() {
     drupal_add_http_header('Status', '401 Unauthorized');
     throw new Exception();
   }
+  // Get the request variables.
+  $request = drupal_json_decode(file_get_contents('php://input'));
   // Ensure assertion was supplied.
-  if (!isset($_POST['assertion'])) {
+  if (!isset($request['assertion'])) {
     watchdog('persona', "Assertion missing.", array(), WATCHDOG_WARNING);
     drupal_add_http_header('Status', '401 Unauthorized');
     throw new Exception();
   }
   // Check XSRF token.
-  if (!isset($_POST['token']) || ($_POST['token'] != persona_xsrf_token())) {
+  if (!isset($request['token']) || ($request['token'] != persona_xsrf_token())) {
     watchdog('persona', "Bad XSRF token.", array(), WATCHDOG_WARNING);
     drupal_add_http_header('Status', '401 Unauthorized');
     throw new Exception();
@@ -223,7 +225,7 @@ function persona_verify() {
     'method' => 'POST',
     'headers' => array('Content-Type' => 'application/json'),
     'data' => drupal_json_encode(array(
-      'assertion' => $_POST['assertion'],
+      'assertion' => $request['assertion'],
       'audience' => $base_url,
     )),
   ));

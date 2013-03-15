@@ -68,11 +68,12 @@ Drupal.behaviors.persona = {
         // Attempt to sign in to the site and then reload the page.
         $.ajax({
           type: 'POST',
+          contentType: 'application/json',
           url: relativeUrl(signInPath),
-          data: {
+          data: JSON.stringify({
             assertion: assertion,
             token: settings.persona.token
-          },
+          }),
           dataType: 'json',
           error: function (jqXHR, textStatus, errorThrown) {
             // If signing in failed tell Persona about it, unless the browser
