@@ -224,6 +224,13 @@ function persona_verify() {
   // Verify assertion with Mozilla's Remote Verification API.
   // TODO: Support local verification once API has stabilized, for example with
   // https://github.com/Falco20019/php-browseridlib
+  $context_options = array(
+    'ssl' => array(
+      'verify_peer' => TRUE,
+      'cafile' => drupal_get_path('module', 'persona') . '/cacert.pem',
+      'CN_match' => 'www.persona.org',
+    ),
+  );
   $result = (array) drupal_http_request('https://verifier.login.persona.org/verify', array(
     'method' => 'POST',
     'headers' => array('Content-Type' => 'application/json'),
@@ -231,6 +238,7 @@ function persona_verify() {
       'assertion' => $request['assertion'],
       'audience' => $base_url,
     )),
+    'context' => stream_context_create($context_options),
   ));
   // Get response variables.
   $response = drupal_json_decode($result['data']);
