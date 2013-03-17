@@ -5,6 +5,39 @@
  */
 
 /**
+ * Implements hook_requirements().
+ */
+function persona_requirements($phase) {
+  if ($phase == 'update') {
+    return;
+  }
+  $t = get_t();
+  $requirement = array('title' => $t("Persona audience (\$base_url)"));
+  // Re-include settings.php, but without $base_url being globalized.
+  // @see drupal_settings_initialize()
+  if (file_exists(DRUPAL_ROOT . '/' . conf_path() . '/settings.php')) {
+    include DRUPAL_ROOT . '/' . conf_path() . '/settings.php';
+  }
+  // Is $base_url hardcoded in settings.php?
+  if (isset($base_url)) {
+    $requirement += array(
+      'value' => $t("Hardcoded in settings.php"),
+      'severity' => REQUIREMENT_OK,
+    );
+  }
+  else {
+    $security_url = 'https://developer.mozilla.org/en-US/docs/Persona/Security_Considerations';
+    $requirement += array(
+      'value' => ($phase == 'runtime') ? $t("Determined from HTTP Host header") : NULL,
+      'severity' => REQUIREMENT_ERROR,
+      'description' => $t("\$base_url must be hardcoded in settings.php for security reasons.<br />See !link",
+        array('!link' => l($security_url, $security_url, array('attributes' => array('target' => '_blank'))))),
+    );
+  }
+  return array('persona' => $requirement);
+}
+
+/**
  * Implements hook_install().
  */
 function persona_install() {
