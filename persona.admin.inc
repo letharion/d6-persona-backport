@@ -19,7 +19,7 @@ function persona_admin_form(array $form, array &$form_state) {
     '#type' => 'checkbox',
     '#title' => t("Set Persona as the only sign in method"),
     '#default_value' => variable_get('persona_takeover_login'),
-    '#description' => t("It will only be possible to sign in or register with !link.",
+    '#description' => t("It will only be possible to register, sign in, or change account email address with !link.<br />Email and password fields will not be present on account edit pages.",
       array('!link' => l("Mozilla Persona", 'http://www.mozilla.org/en-US/persona/',
         array('attributes' => array('target' => '_blank'))))),
   );
