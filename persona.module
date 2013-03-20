@@ -343,7 +343,7 @@ function persona_sign_in() {
       drupal_add_http_header('Status', '201 Created');
       // Redirect to account edit page if new accounts are set to do so.
       if (variable_get('persona_new_account_edit')) {
-        return $account->uid;
+        return 'user/' . $account->uid . '/edit';
       }
     }
     else {

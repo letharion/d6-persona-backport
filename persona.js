@@ -83,10 +83,10 @@ Drupal.behaviors.persona = {
             }
             window.location.reload();
           },
-          success: function (uid, textStatus, jqXHR) {
+          success: function (path, textStatus, jqXHR) {
             // Redirect if uid provided, otherwise just reload the page.
-            if (uid) {
-              window.location = relativeUrl('user/' + uid + '/edit', settings.persona.currentPath);
+            if (path) {
+              window.location = relativeUrl(path, settings.persona.currentPath);
             }
             else {
               window.location.reload();
