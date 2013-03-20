@@ -25,7 +25,7 @@ function persona_admin_form(array $form, array &$form_state) {
   );
   $form['general']['persona_new_account_edit'] = array(
     '#type' => 'checkbox',
-    '#title' => t("Redirect to account edit page when a user signs in for the first time"),
+    '#title' => t("Redirect to account edit page when user signs in for the first time"),
     '#default_value' => variable_get('persona_new_account_edit'),
     '#description' => t("When they save their account they will be redirected back to the page where they signed in."),
   );
