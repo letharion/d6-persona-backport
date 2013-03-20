@@ -29,7 +29,7 @@ Drupal.behaviors.persona = {
       var url = settings.basePath;
       url += settings.persona.cleanUrls ? '' : '?q=';
       url += path;
-      if (destination) {
+      if (destination != null) {
         url += settings.persona.cleanUrls ? '?' : '&';
         url += 'destination=' + Drupal.encodePath(destination);
       }
