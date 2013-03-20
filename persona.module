@@ -158,7 +158,7 @@ function persona_form_user_login_block_alter(array &$form, array &$form_state, $
  * @return bool
  *   TRUE if the name is taken.
  */
-function _persona_user_name_exists($name) {
+function _persona_username_exists($name) {
   // Search for a user entity with the supplied name.
   $query = new EntityFieldQuery;
   return (bool) $query->entityCondition('entity_type', 'user')
@@ -176,16 +176,15 @@ function _persona_user_name_exists($name) {
  * @return string
  *   Unique extracted name. No existing users will have this name.
  */
-function _persona_extract_user_name($email) {
-  // Extract the local-part from the email address.
-  $name = strtok($email, '@');
+function _persona_extract_username($email) {
+  // Extract the local-part from the email address if not using email usernames.
+  $name = variable_get('persona_email_usernames') ? $email : strtok($email, '@');
   // Ensure it is unique.
-  if (_persona_user_name_exists($name)) {
+  if (_persona_username_exists($name)) {
     $i = 2;
     do {
       $attempt = $name . '-' . $i++;
-
-    } while (_persona_user_name_exists($attempt));
+    } while (_persona_username_exists($attempt));
     $name = $attempt;
   }
   return $name;
@@ -325,7 +324,7 @@ function persona_sign_in() {
   elseif (variable_get('user_register')) {
     // Create an account for this user.
     $fields = array(
-      'name' => _persona_extract_user_name($email),
+      'name' => _persona_extract_username($email),
       'pass' => user_password(16),
       'mail' => $email,
       'access' => REQUEST_TIME,
@@ -383,8 +382,12 @@ function persona_change_email() {
         catch (Exception $e) {}
       }
       else {
-        // Update user's email address.
+        // Update account email address.
         $user->mail = $email;
+        if (variable_get('persona_email_usernames')) {
+          // Update account username.
+          $user->name = _persona_extract_username($email);
+        }
         user_save($user);
         watchdog('persona', "%name changed email address to %email.", array(
           '%name' => $user->name,

@@ -23,11 +23,17 @@ function persona_admin_form(array $form, array &$form_state) {
       array('!link' => l("Mozilla Persona", 'http://www.mozilla.org/en-US/persona/',
         array('attributes' => array('target' => '_blank'))))),
   );
+  $form['general']['persona_email_usernames'] = array(
+    '#type' => 'checkbox',
+    '#title' => t("Use email addresses as usernames"),
+    '#default_value' => variable_get('persona_email_usernames'),
+    '#description' => t("When Persona is used to register or change an account email address, the username will be set to the email address.<br />If this option is not enabled, the username part of the email address will be used as the account username when registering with Persona.<br />When using this option with Persona as the only sign in method, it is useful to disable permission \"change own username\"."),
+  );
   $form['general']['persona_new_account_edit'] = array(
     '#type' => 'checkbox',
     '#title' => t("Redirect to account edit page when user signs in for the first time"),
     '#default_value' => variable_get('persona_new_account_edit'),
-    '#description' => t("When they save their account they will be redirected back to the page where they signed in."),
+    '#description' => t("When the form is submitted the user will be redirected back to the page where they signed in."),
   );
 
   // Button settings.
