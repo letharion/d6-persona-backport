@@ -2,18 +2,8 @@
 
 Drupal.behaviors.persona = {
   attach: function (context, settings) {
-
-    /**
-     * Requests a signed identity assertion from the browser.
-     */
-    function request() {
-      navigator.id.request({
-        siteName: settings.persona.siteName,
-        siteLogo: settings.persona.siteLogo,
-        termsOfService: settings.persona.termsOfService,
-        privacyPolicy: settings.persona.privacyPolicy
-      });
-    }
+    // Sign out should only redirect to home in the tab where it was actioned.
+    var goHomeOnSignOut = false;
 
     /**
      * Generates a relative URL for the given Drupal path. Optionally adds
@@ -36,31 +26,6 @@ Drupal.behaviors.persona = {
       return url;
     }
 
-    // Define default sign in callback path.
-    var signInPath = 'user/persona/sign-in';
-    // Sign out should only redirect to home in the tab where it was actioned.
-    var goHomeOnSignOut = false;
-
-    // Attach to buttons.
-    $('.persona-sign-in').click(function (e) {
-      e.preventDefault();
-      e.stopPropagation();
-      request();
-    });
-    $('.persona-change-email').click(function (e) {
-      e.preventDefault();
-      e.stopPropagation();
-      // Override sign in callback path to change email.
-      signInPath = 'user/persona/change-email';
-      request();
-    });
-    $('.persona-logout').click(function (e) {
-      e.preventDefault();
-      e.stopPropagation();
-      // Make this tab redirect to home.
-      goHomeOnSignOut = true;
-      navigator.id.logout();
-    });
     // Register callbacks to be invoked when a user signs in or out.
     navigator.id.watch({
       loggedInUser: settings.persona.email,
@@ -69,22 +34,18 @@ Drupal.behaviors.persona = {
         $.ajax({
           type: 'POST',
           contentType: 'application/json',
-          url: relativeUrl(signInPath),
+          url: relativeUrl('user/persona/sign-in'),
           data: JSON.stringify({
             assertion: assertion,
             token: settings.persona.token
           }),
           dataType: 'json',
           error: function (jqXHR, textStatus, errorThrown) {
-            // If signing in failed tell Persona about it, unless the browser
-            // was already signed in.
-            if (jqXHR.status != 409) {
-              navigator.id.logout();
-            }
-            window.location.reload();
+            // Tell Persona that it didn't work out.
+            navigator.id.logout();
           },
           success: function (path, textStatus, jqXHR) {
-            // Redirect if uid provided, otherwise just reload the page.
+            // Redirect if path provided, otherwise just reload the page.
             if (path) {
               window.location = relativeUrl(path, settings.persona.currentPath);
             }
@@ -114,8 +75,33 @@ Drupal.behaviors.persona = {
             }
           });
         }
+        else {
+          window.location.reload();
+        }
       }
     });
+    // Attach the buttons.
+    $('.persona-sign-in').click(function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      // Request Persona sign in.
+      navigator.id.request({
+        siteName: settings.persona.siteName,
+        siteLogo: settings.persona.siteLogo,
+        termsOfService: settings.persona.termsOfService,
+        privacyPolicy: settings.persona.privacyPolicy
+      });
+    });
+    // Only attach to sign out buttons if we are signed in with Persona.
+    if (settings.persona.email) {
+      $('.persona-sign-out').click(function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        // Make this tab redirect to home.
+        goHomeOnSignOut = true;
+        navigator.id.logout();
+      });
+    }
   }
 };
 

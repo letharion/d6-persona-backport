@@ -6,10 +6,10 @@ into your site, the authentication is done by Persona.
 INSTRUCTIONS:
 Simply install the module, and the Persona login link will be added to the
 login/register form. You can easily create your own Persona link by giving
-any element a class of 'persona-login'.
+any element a class of 'persona-sign-in'.
 
 You can make any element end the Persona session and logout the Drupal
-user by having a class of 'persona-logout' on an element.
+user by having a class of 'persona-sign-out' on an element.
 
 Currently, the default Drupal login/logout system work properly using Persona.
 

@@ -31,6 +31,10 @@
   box-shadow: 0 1px 0 rgba(0, 0, 0, 0.2);
 }
 
+.block-persona .persona-button {
+  width: 100%;
+}
+
 .persona-button:hover {
   color: white;
   background: #21669f;

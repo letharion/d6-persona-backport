@@ -9,7 +9,6 @@
  */
 function persona_admin_form(array $form, array &$form_state) {
   $form = array();
-
   // General settings.
   $form['general'] = array(
     '#type' => 'fieldset',
@@ -19,7 +18,7 @@ function persona_admin_form(array $form, array &$form_state) {
     '#type' => 'checkbox',
     '#title' => t("Set Persona as the only sign in method"),
     '#default_value' => variable_get('persona_takeover_login'),
-    '#description' => t("It will only be possible to register, sign in, or change account email address with !link.<br />Email and password fields will not be present on account edit pages.",
+    '#description' => t("It will only be possible to register or sign in with !link.<br />Email and password fields will not be present on account edit pages.",
       array('!link' => l("Mozilla Persona", 'http://www.mozilla.org/en-US/persona/',
         array('attributes' => array('target' => '_blank'))))),
   );
@@ -27,7 +26,7 @@ function persona_admin_form(array $form, array &$form_state) {
     '#type' => 'checkbox',
     '#title' => t("Use email addresses as usernames"),
     '#default_value' => variable_get('persona_email_usernames'),
-    '#description' => t("When Persona is used to register or change an account email address, the username will be set to the email address.<br />If this option is not enabled, the username part of the email address will be used as the account username when registering with Persona.<br />When using this option with Persona as the only sign in method, it is useful to disable permission \"change own username\"."),
+    '#description' => t("When Persona is used to register a new account, the username will be set to the email address used.<br />If this option is not enabled, the username part of the email address will be used as the account username when registering with Persona.<br />When using this option with Persona as the only sign in method, it is useful to disable permission \"change own username\"."),
   );
   $form['general']['persona_new_account_edit'] = array(
     '#type' => 'checkbox',
@@ -35,7 +34,6 @@ function persona_admin_form(array $form, array &$form_state) {
     '#default_value' => variable_get('persona_new_account_edit'),
     '#description' => t("When the form is submitted the user will be redirected back to the page where they signed in."),
   );
-
   // Button settings.
   $form['buttons'] = array(
     '#type' => 'fieldset',
@@ -56,6 +54,7 @@ function persona_admin_form(array $form, array &$form_state) {
     '#type' => 'textfield',
     '#title' => t("Sign In Button Text"),
     '#default_value' => variable_get('persona_button_text_sign_in'),
+    '#required' => TRUE,
   );
   $form['buttons']['persona_sign_in_button_preview'] = array(
     '#type' => 'item',
@@ -66,23 +65,13 @@ function persona_admin_form(array $form, array &$form_state) {
     '#type' => 'textfield',
     '#title' => t("Change Email Button Text"),
     '#default_value' => variable_get('persona_button_text_change_email'),
+    '#required' => TRUE,
   );
   $form['buttons']['persona_change_email_button_preview'] = array(
     '#type' => 'item',
     '#title' => t("Change Email Button Preview"),
     '#markup' => persona_button(FALSE),
   );
-  $form['buttons']['persona_login_display'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('Display on login form'),
-    '#default_value' => variable_get('persona_login_display'),
-  );
-  $form['buttons']['persona_login_block_display'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('Display on login block'),
-    '#default_value' => variable_get('persona_login_block_display'),
-  );
-
   // Legal Document settings.
   $form['legal_docs'] = array(
     '#type' => 'fieldset',
@@ -101,36 +90,13 @@ function persona_admin_form(array $form, array &$form_state) {
     '#default_value' => variable_get('persona_privacy_link'),
     '#description' => "Link in the form of a local path or an absolute URL.",
   );
-
-  // Add CSS and JavaScript.
-  $form['#attached']['css'][] = drupal_get_path('module', 'persona') . '/persona-buttons.css';
+  // Add JavaScript.
   $form['#attached']['js'][] = drupal_get_path('module', 'persona') . '/persona.admin.js';
-
+  // Turn it into a settings form.
   $form = system_settings_form($form);
   // Make sure our submit handler is invoked.
   $form['#submit'][] = 'persona_admin_form_submit';
-
   return $form;
-}
-
-/**
- * Implements hook_FORM_ID_validate().
- */
-function persona_admin_form_validate(array $form, array &$form_state) {
-  // Make sure buttons have text.
-  if ($form_state['values']['persona_button_text_sign_in'] == '') {
-    form_set_error('persona_button_text_sign_in', t("Please enter some text for your Sign In button"));
-  }
-  if ($form_state['values']['persona_button_text_change_email'] == '') {
-    form_set_error('persona_button_text_change_email', t("Please enter some text for your Change Email button"));
-  }
-  // Need to check and see if the admin has disabled the login button,
-  // but enabled the takeover.
-  if ($form_state['values']['persona_takeover_login'] &&
-    !($form_state['values']['persona_login_display'] || $form_state['values']['persona_login_block_display']))
-  {
-    form_set_error('persona_login_display', t("To use Persona as the only login method, it must be shown on the login form, or block."));
-  }
 }
 
 /**
