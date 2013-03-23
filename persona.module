@@ -46,6 +46,7 @@ function persona_init() {
   // TODO: Conditionally include this file only for browsers that don't
   // implement navigator.id natively (currently all of them).
   // @see https://developer.mozilla.org/en-US/docs/DOM/navigator.id
+  // @see http://drupal.org/node/865536
   drupal_add_js('https://login.persona.org/include.js', array(
     'type' => 'external',
     'scope' => 'footer',
