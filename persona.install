@@ -47,8 +47,6 @@ function persona_install() {
   variable_set('persona_new_account_edit', FALSE);
   // Button settings.
   variable_set('persona_button_style', 'dark');
-  variable_set('persona_button_text_sign_in', "sign in with your email");
-  variable_set('persona_button_text_change_email', "change email used to sign in");
   // Legal Documents settings.
   variable_set('persona_terms_link', '');
   variable_set('persona_privacy_link', '');
@@ -75,8 +73,6 @@ function persona_uninstall() {
   variable_del('persona_new_account_edit');
   // Button settings.
   variable_del('persona_button_style');
-  variable_del('persona_button_text_sign_in');
-  variable_del('persona_button_text_change_email');
   // Legal Documents settings.
   variable_del('persona_terms_link');
   variable_del('persona_privacy_link');
