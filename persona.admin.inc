@@ -5,7 +5,7 @@
  */
 
 /**
- * Implements hook_form_ID().
+ * Generates admin form.
  */
 function persona_admin_form(array $form, array &$form_state) {
   $form = array();
@@ -83,7 +83,7 @@ function persona_admin_form(array $form, array &$form_state) {
 }
 
 /**
- * Implements hook_FORM_ID_submit().
+ * Extra submit handler for admin form.
  */
 function persona_admin_form_submit(array $form, array &$form_state) {
   // Make sure changes in persona_menu_alter() take effect.
