@@ -1,6 +1,7 @@
 name = Persona
-description = Adds Mozilla Persona functionality to the standard user login form
-configure=admin/config/people/persona
+description = Enables users to authenticate using Mozilla Persona.
+package = Authentication
+configure = admin/config/people/persona
 core = 7.x
 dependencies[] = session_api
 scripts[] = persona.js
