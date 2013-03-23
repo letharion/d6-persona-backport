@@ -275,21 +275,32 @@ function persona_sign_in() {
 /**
  * Generates a Persona button.
  *
- * @param bool $sign_in
- *   Whether the button should be a Sign In button (default). Otherwise it will
- *   be a Change Email button.
+ * @param string $type
+ *   Button to render.
  *
  * @return string
  *   HTML of generated button.
  */
-function persona_sign_in_button() {
-  // Determine CSS classes and text.
-  $classes = array('persona-sign-in');
-  if (!user_is_logged_in()) {
-    $text = t("sign in");
+function persona_button($type = NULL) {
+  // Determine button type if not specified.
+  if (!$type) {
+    $type = user_is_logged_in() ? 'switch_account' : 'sign_in';
   }
-  else {
-    $text = t("switch account");
+  // Determine CSS classes and text.
+  $classes = array('persona-' . $type);
+  switch ($type) {
+    case 'sign_in':
+      $text = t("sign in");
+      $classes[] = 'persona-sign-in';
+      break;
+    case 'switch_account':
+      $text = t("switch account");
+      $classes[] = 'persona-sign-in';
+      break;
+    case 'sign_out':
+      $text = t("sign out");
+      $classes[] = 'persona-sign-out';
+      break;
   }
   $style = variable_get('persona_button_style');
   if ($style != '') {
@@ -301,23 +312,6 @@ function persona_sign_in_button() {
   $html .= $text;
   $html .= '</span></div>';
   return $html;
-}
-
-function persona_sign_out_button() {
-  // Determine CSS classes.
-  $style = variable_get('persona_button_style');
-  if ($style != '') {
-    $classes[] = 'persona-button';
-    $classes[] = $style;
-  }
-  return l('<span>' . t("sign out") . '</span>', 'https://login.persona.org/', array(
-    'attributes' => array(
-      'style' => 'cursor: pointer;',
-      'target' => '_blank',
-      'class' => $classes,
-    ),
-    'html' => TRUE,
-  ));
 }
 
 /**
@@ -338,9 +332,9 @@ function persona_block_info() {
  * Implements hook_block_view().
  */
 function persona_block_view($delta) {
-  $output = persona_sign_in_button() ;
+  $output = persona_button();
   if (user_is_logged_in()) {
-    $output .= persona_sign_out_button();
+    $output .= persona_button('sign_out');
   }
   return array('content' => $output);
 }

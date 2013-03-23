@@ -50,27 +50,10 @@ function persona_admin_form(array $form, array &$form_state) {
       'dark' => t("Dark"),
     ),
   );
-  $form['buttons']['persona_button_text_sign_in'] = array(
-    '#type' => 'textfield',
-    '#title' => t("Sign In Button Text"),
-    '#default_value' => variable_get('persona_button_text_sign_in'),
-    '#required' => TRUE,
-  );
-  $form['buttons']['persona_sign_in_button_preview'] = array(
+  $form['buttons']['persona_style_preview'] = array(
     '#type' => 'item',
-    '#title' => t("Sign In Button Preview"),
-    '#markup' => persona_button(),
-  );
-  $form['buttons']['persona_button_text_change_email'] = array(
-    '#type' => 'textfield',
-    '#title' => t("Change Email Button Text"),
-    '#default_value' => variable_get('persona_button_text_change_email'),
-    '#required' => TRUE,
-  );
-  $form['buttons']['persona_change_email_button_preview'] = array(
-    '#type' => 'item',
-    '#title' => t("Change Email Button Preview"),
-    '#markup' => persona_button(FALSE),
+    '#title' => t("Preview"),
+    '#markup' => persona_button('sign_in'),
   );
   // Legal Document settings.
   $form['legal_docs'] = array(
