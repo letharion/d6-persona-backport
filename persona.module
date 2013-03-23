@@ -273,16 +273,29 @@ function persona_sign_in() {
 }
 
 /**
- * Generates a Persona button.
+ * Implements hook_theme().
+ */
+function persona_theme() {
+  return array(
+    'persona_button' => array(
+      'variables' => array('type' => NULL),
+    ),
+  );
+}
+
+/**
+ * Renders a Persona button.
  *
- * @param string $type
- *   Button to render.
+ * @param $variables
+ *   An associative array containing:
+ *   - type: Button to render.
  *
  * @return string
  *   HTML of generated button.
  */
-function persona_button($type = NULL) {
-  // Determine button type if not specified.
+function theme_persona_button(array $variables) {
+  $type = $variables['type'];
+  // Create "switch account" button instead of "sign in" if already signed in.
   if (!$type) {
     $type = user_is_logged_in() ? 'switch_account' : 'sign_in';
   }
@@ -356,10 +369,10 @@ function persona_block_view($delta) {
   // Create the buttons.
   $output = '';
   if (!user_is_logged_in() || variable_get('persona_block_switch_account')) {
-    $output = persona_button();
+    $output = theme('persona_button');
   }
   if (user_is_logged_in()) {
-    $output .= persona_button('sign_out');
+    $output .= theme('persona_button', array('type' => 'sign_out'));
   }
   return array('content' => $output);
 }
@@ -405,7 +418,7 @@ function persona_form_user_profile_form_alter(array &$form, array &$form_state, 
 function persona_form_user_login_alter(array &$form, array &$form_state, $form_id) {
   // Add Persona sign in button to standard login page.
   $form['persona'] = array(
-    '#markup' => persona_button(),
+    '#markup' => theme('persona_button'),
     '#weight' => -1,
   );
   // Remove standard sign in form if Persona is taking over completely.
