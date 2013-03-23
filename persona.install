@@ -50,6 +50,8 @@ function persona_install() {
   // Legal Documents settings.
   variable_set('persona_terms_link', '');
   variable_set('persona_privacy_link', '');
+  // Block settings.
+  variable_set('persona_block_switch_account', TRUE);
   // Add Persona block to default theme.
   db_insert('block')
     ->fields(array(
@@ -76,4 +78,6 @@ function persona_uninstall() {
   // Legal Documents settings.
   variable_del('persona_terms_link');
   variable_del('persona_privacy_link');
+  // Block settings.
+  variable_del('persona_block_switch_account');
 }

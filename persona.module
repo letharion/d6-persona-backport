@@ -327,6 +327,25 @@ function persona_block_info() {
 }
 
 /**
+ * Implements hook_block_configure().
+ */
+function persona_block_configure($delta = '') {
+  $form['switch_account'] = array(
+    '#type' => 'checkbox',
+    '#title' => t("Display \"switch account\" button when signed in."),
+    '#default_value' => variable_get('persona_block_switch_account'),
+  );
+  return $form;
+}
+
+/**
+ * Implements hook_block_save().
+ */
+function persona_block_save($delta = '', $edit = array()) {
+  variable_set('persona_block_switch_account', $edit['switch_account']);
+}
+
+/**
  * Implements hook_block_view().
  */
 function persona_block_view($delta) {
@@ -335,7 +354,10 @@ function persona_block_view($delta) {
     return;
   }
   // Create the buttons.
-  $output = persona_button();
+  $output = '';
+  if (!user_is_logged_in() || variable_get('persona_block_switch_account')) {
+    $output = persona_button();
+  }
   if (user_is_logged_in()) {
     $output .= persona_button('sign_out');
   }
