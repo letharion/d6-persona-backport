@@ -332,6 +332,11 @@ function persona_block_info() {
  * Implements hook_block_view().
  */
 function persona_block_view($delta) {
+  // If we are on the standard sign in page, don't display this block.
+  if (arg(0) == 'user' && !is_numeric(arg(1))) {
+    return;
+  }
+  // Create the buttons.
   $output = persona_button();
   if (user_is_logged_in()) {
     $output .= persona_button('sign_out');
@@ -378,6 +383,12 @@ function persona_form_user_profile_form_alter(array &$form, array &$form_state, 
  * Implements hook_form_FORM_ID_alter().
  */
 function persona_form_user_login_alter(array &$form, array &$form_state, $form_id) {
+  // Add Persona sign in button to standard login page.
+  $form['persona'] = array(
+    '#markup' => persona_button(),
+    '#weight' => -1,
+  );
+  // Remove standard sign in form if Persona is taking over completely.
   if (variable_get('persona_takeover_login')) {
     unset($form['name']);
     unset($form['pass']);
