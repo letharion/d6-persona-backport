@@ -52,6 +52,17 @@ function persona_install() {
   // Legal Documents settings.
   variable_set('persona_terms_link', '');
   variable_set('persona_privacy_link', '');
+  // Add Persona block to default theme.
+  db_insert('block')
+    ->fields(array(
+      'module' => 'persona',
+      'delta' => 'buttons',
+      'theme' => variable_get('theme_default', 'bartik'),
+      'status' => 1,
+      'region' => 'sidebar_first',
+      'pages' => '',
+    ))
+    ->execute();
 }
 
 /**

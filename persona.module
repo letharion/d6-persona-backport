@@ -321,8 +321,6 @@ function persona_block_info() {
   $blocks = array(
     'buttons' => array(
       'info' => t("Persona buttons"),
-      'region' => 'sidebar_first',
-      'status' => 1,
     ),
   );
   return $blocks;
