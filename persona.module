@@ -126,17 +126,6 @@ function _persona_extract_username($email) {
  */
 function persona_verify() {
   global $base_url;
-  // Ensure that a POST request was not made by a <form> being submitted as it
-  // could be a Login XSRF attack. Checking for the mere presence of a
-  // non-standard HTTP header is sufficient to guarantee that the request was
-  // made with AJAX and therefore is protected by CORS.
-  // @see http://en.wikipedia.org/wiki/Cross-origin_resource_sharing
-  // @see http://www.adambarth.com/papers/2008/barth-jackson-mitchell-b.pdf 4.3
-  if (!isset($_SERVER['HTTP_X_REQUESTED_WITH'])) {
-    watchdog('persona', "Non-AJAX verify request made.", array(), WATCHDOG_WARNING);
-    drupal_add_http_header('Status', '401 Unauthorized');
-    throw new Exception();
-  }
   // Get request variables.
   $request = drupal_json_decode(file_get_contents('php://input'));
   // Ensure assertion was supplied.
