@@ -27,9 +27,7 @@ function persona_init() {
     'currentPath' => (current_path() == variable_get('site_frontpage', 'node')) ? '' : current_path(),
   );
   // Add the legal documents if they are both provided.
-  if ((variable_get('persona_terms_link') != '') &&
-    (variable_get('persona_privacy_link') != ''))
-  {
+  if ((variable_get('persona_terms_link') != '') && (variable_get('persona_privacy_link') != '')) {
     $settings += array(
       'termsOfService' => url(variable_get('persona_terms_link'), array('absolute' => TRUE)),
       'privacyPolicy' => url(variable_get('persona_privacy_link'), array('absolute' => TRUE)),
@@ -386,10 +384,7 @@ function persona_block_view($delta) {
  * Implements hook_block_view_alter().
  */
 function persona_block_view_alter(&$data, $block) {
- if (variable_get('persona_takeover_login') &&
-   $block->module == 'user' &&
-   $block->delta == 'login')
-  {
+  if (variable_get('persona_takeover_login') && $block->module == 'user' && $block->delta == 'login') {
     $data['content'] = array();
   }
 }
