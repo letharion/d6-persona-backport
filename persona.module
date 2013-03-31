@@ -306,15 +306,15 @@ function theme_persona_button(array $variables) {
   $classes = array('persona-' . $type);
   switch ($type) {
     case 'sign_in':
-      $text = t("sign in");
+      $text = t("Sign in");
       $classes[] = 'persona-sign-in';
       break;
     case 'switch_account':
-      $text = t("switch account");
+      $text = t("Switch account");
       $classes[] = 'persona-sign-in';
       break;
     case 'sign_out':
-      $text = t("sign out");
+      $text = t("Sign out");
       $classes[] = 'persona-sign-out';
       break;
   }
