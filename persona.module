@@ -128,12 +128,6 @@ function persona_verify() {
   global $base_url;
   // Get request variables.
   $request = drupal_json_decode(file_get_contents('php://input'));
-  // Ensure assertion was supplied.
-  if (!isset($request['assertion'])) {
-    watchdog('persona', "Assertion missing.", array(), WATCHDOG_WARNING);
-    drupal_add_http_header('Status', '401 Unauthorized');
-    throw new Exception();
-  }
   // Check XSRF token.
   if (!isset($request['token']) || ($request['token'] != persona_xsrf_token())) {
     watchdog('persona', "Bad XSRF token.", array(), WATCHDOG_WARNING);
