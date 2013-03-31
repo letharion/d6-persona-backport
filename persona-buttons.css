@@ -1,3 +1,11 @@
+/**
+ * @file
+ * CSS for Persona buttons.
+ *
+ * Derived from Sawyer Hollenshead's CSS.
+ * @see https://developer.mozilla.org/en-US/docs/Persona/branding
+ */
+
 /* Link body */
 .persona-button {
   color: #fff;
