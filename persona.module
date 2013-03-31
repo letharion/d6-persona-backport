@@ -41,7 +41,10 @@ function persona_init() {
     $settings['site_logo'] = theme_get_setting('logo');
   }
   drupal_add_js(array('persona' => $settings), 'setting');
-  // Include the Persona JavaScript library at the bottom of the body.
+  // Add the Persona JavaScript library. The documentation recommends putting
+  // this at the bottom of the page body, but this causes a significant delay
+  // before Drupal behaviours are activated causing visible page rearrangement.
+  // @see https://developer.mozilla.org/en-US/docs/Persona/Quick_Setup
   // TODO: Host this file locally once it has stabilized.
   // TODO: Conditionally include this file only for browsers that don't
   // implement navigator.id natively (currently all of them).
@@ -49,7 +52,7 @@ function persona_init() {
   // @see http://drupal.org/node/865536
   drupal_add_js('https://login.persona.org/include.js', array(
     'type' => 'external',
-    'scope' => 'footer',
+    'group' => JS_LIBRARY,
   ));
 }
 
