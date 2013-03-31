@@ -83,7 +83,7 @@ Drupal.behaviors.persona = {
     // Switch off Persona when leaving the page to prevent it from issuing a
     // rouge onlogout if it hadn't finished initialising.
     // @see https://github.com/mozilla/browserid/issues/2560
-    $(window).bind('beforeunload', function() {
+    $(window).bind('beforeunload', function (event) {
       navigator.id.watch({
         loggedInUser: settings.persona.email,
         onlogin: function (assertion) {},
@@ -91,9 +91,7 @@ Drupal.behaviors.persona = {
       });
     });
     // Attach the buttons.
-    $('.persona-sign-in').click(function (e) {
-      e.preventDefault();
-      e.stopPropagation();
+    $('.persona-sign-in').click(function (event) {
       // Request Persona sign in.
       navigator.id.request({
         siteName: settings.persona.siteName,
@@ -104,12 +102,12 @@ Drupal.behaviors.persona = {
     });
     // Only attach to sign out buttons if we are signed in with Persona.
     if (settings.persona.email) {
-      $('.persona-sign-out').click(function (e) {
-        e.preventDefault();
-        e.stopPropagation();
+      $('.persona-sign-out').click(function (event) {
         // Make this tab redirect to home.
         goHomeOnSignOut = true;
         navigator.id.logout();
+        // Prevent the browser from following a link.
+        return false;
       });
     }
   }
