@@ -83,13 +83,13 @@ Drupal.behaviors.persona = {
     // Switch off Persona when leaving the page to prevent it from issuing a
     // rouge onlogout if it hadn't finished initialising.
     // @see https://github.com/mozilla/browserid/issues/2560
-    window.addEventListener('beforeunload', function() {
+    $(window).bind('beforeunload', function() {
       navigator.id.watch({
         loggedInUser: settings.persona.email,
         onlogin: function (assertion) {},
         onlogout: function () {}
       });
-    }, true);
+    });
     // Attach the buttons.
     $('.persona-sign-in').click(function (e) {
       e.preventDefault();
