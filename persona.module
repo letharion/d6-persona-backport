@@ -357,7 +357,7 @@ function persona_block_configure($delta = '') {
 /**
  * Implements hook_block_save().
  */
-function persona_block_save($delta = '', $edit = array()) {
+function persona_block_save($delta = '', array $edit = array()) {
   variable_set('persona_block_switch_account', $edit['switch_account']);
 }
 
@@ -383,7 +383,7 @@ function persona_block_view($delta) {
 /**
  * Implements hook_block_view_alter().
  */
-function persona_block_view_alter(&$data, $block) {
+function persona_block_view_alter(array &$data, $block) {
   if (variable_get('persona_takeover_login') && $block->module == 'user' && $block->delta == 'login') {
     $data['content'] = array();
   }
@@ -392,7 +392,7 @@ function persona_block_view_alter(&$data, $block) {
 /**
  * Implements hook_menu_alter().
  */
-function persona_menu_alter(&$items) {
+function persona_menu_alter(array &$items) {
   if (variable_get('persona_takeover_login')) {
     unset($items['user/register']);
     unset($items['user/login']);
