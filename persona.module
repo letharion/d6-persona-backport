@@ -125,6 +125,27 @@ function _persona_extract_username($email) {
 }
 
 /**
+ * Determines request variables from JSON POST data.
+ *
+ * @return array
+ *   Keyed array of request variables.
+ */
+function _persona_request_variables() {
+  return drupal_json_decode(file_get_contents('php://input'));
+}
+
+/**
+ * Ensures XSRF token is correct.
+ */
+function _persona_check_xsrf_token() {
+  $request = _persona_request_variables();
+  if ($request['token'] != persona_xsrf_token()) {
+    watchdog('persona', "Bad XSRF token.", array(), WATCHDOG_WARNING);
+    throw new Exception();
+  }
+}
+
+/**
  * Verifies the Persona POST data.
  *
  * @return string
@@ -132,14 +153,7 @@ function _persona_extract_username($email) {
  */
 function persona_verify() {
   global $base_url;
-  // Get request variables.
-  $request = drupal_json_decode(file_get_contents('php://input'));
-  // Check XSRF token.
-  if ($request['token'] != persona_xsrf_token()) {
-    watchdog('persona', "Bad XSRF token.", array(), WATCHDOG_WARNING);
-    drupal_add_http_header('Status', '401 Unauthorized');
-    throw new Exception();
-  }
+  $request = _persona_request_variables();
   // Verify assertion with Mozilla's Remote Verification API.
   // TODO: Support local verification once API has stabilized, for example with
   // https://github.com/Falco20019/php-browseridlib
@@ -167,7 +181,6 @@ function persona_verify() {
       '@response' => var_export($response, TRUE),
       '@code' => $result['code'],
     ), WATCHDOG_ERROR);
-    drupal_add_http_header('Status', '502 Bad Gateway');
     throw new Exception();
   }
   // Return email address obtained from assertion.
@@ -199,11 +212,12 @@ function _persona_sign_in($account) {
  */
 function persona_sign_in() {
   global $user;
-  // Obtain email address from Persona.
   try {
+    _persona_check_xsrf_token();
     $email = persona_verify();
   }
   catch (Exception $e) {
+    drupal_add_http_header('Status', '401 Unauthorized');
     drupal_set_message(t("Sorry, there was a problem signing you in with Persona."), 'error');
     return;
   }
@@ -274,6 +288,12 @@ function persona_sign_in() {
  */
 function persona_sign_out() {
   global $user;
+  try {
+    _persona_check_xsrf_token();
+  }
+  catch (Exception $e) {
+    return;
+  }
   if (user_is_logged_in()) {
     watchdog('user', 'Session closed for %name.', array('%name' => $user->name));
     module_invoke_all('user_logout', $user);

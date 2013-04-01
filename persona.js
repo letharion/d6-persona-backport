@@ -36,8 +36,8 @@ Drupal.behaviors.persona = {
           contentType: 'application/json',
           url: relativeUrl('user/persona/sign-in'),
           data: JSON.stringify({
-            assertion: assertion,
-            token: settings.persona.token
+            token: settings.persona.token,
+            assertion: assertion
           }),
           dataType: 'json',
           error: function (jqXHR, textStatus, errorThrown) {
@@ -63,6 +63,9 @@ Drupal.behaviors.persona = {
             type: 'POST',
             contentType: 'application/json',
             url: relativeUrl('user/persona/sign-out'),
+            data: JSON.stringify({
+              token: settings.persona.token
+            }),
             dataType: 'json',
             complete: function (jqXHR, textStatus) {
               if (goHomeOnSignOut) {
