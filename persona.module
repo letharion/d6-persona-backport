@@ -325,6 +325,7 @@ function persona_theme() {
  *   HTML of generated button.
  */
 function theme_persona_button(array $variables) {
+  drupal_add_css(drupal_get_path('module', 'persona') . '/persona-buttons.css');
   $type = $variables['type'];
   // Create "switch account" button instead of "sign in" if already signed in.
   if (!$type) {

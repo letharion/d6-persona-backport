@@ -5,4 +5,3 @@ configure = admin/config/people/persona
 core = 7.x
 dependencies[] = session_api
 scripts[] = persona.js
-stylesheets[all][] = persona-buttons.css
