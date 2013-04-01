@@ -425,6 +425,7 @@ function persona_menu_alter(array &$items) {
     unset($items['user/register']);
     unset($items['user/login']);
     unset($items['user/password']);
+    unset($items['user/logout']);
   }
 }
 
