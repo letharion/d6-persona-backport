@@ -59,9 +59,6 @@ Drupal.behaviors.persona = {
         // Only sign out from the website if it is already signed in. This
         // prevents unnecessary sign out requests when verification fails.
         if (settings.persona.email) {
-          // Sign out asynchronously to avoid an access denied page, as the
-          // browser may have already been signed out in a different tab.
-          // Redirect to front page.
           $.ajax({
             type: 'POST',
             contentType: 'application/json',
