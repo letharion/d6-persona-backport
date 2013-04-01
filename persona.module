@@ -350,17 +350,17 @@ function persona_block_save($delta = '', array $edit = array()) {
 function persona_block_view($delta) {
   // If we are on the standard sign in page, don't display this block.
   if (arg(0) == 'user' && !is_numeric(arg(1))) {
-    return;
+    return array();
   }
   // Create the buttons.
-  $output = '';
+  $buttons = array();
   if (!user_is_logged_in() || variable_get('persona_block_switch_account')) {
-    $output = theme('persona_button');
+    $buttons[] = array('#theme' => 'persona_button');
   }
   if (user_is_logged_in()) {
-    $output .= theme('persona_button', array('type' => 'sign_out'));
+    $buttons[] = array('#theme' => 'persona_button', '#type' => 'sign_out');
   }
-  return array('content' => $output);
+  return array('content' => $buttons);
 }
 
 /**
