@@ -401,7 +401,7 @@ function persona_form_user_profile_form_alter(array &$form, array &$form_state, 
 function persona_form_user_login_alter(array &$form, array &$form_state, $form_id) {
   // Add Persona sign in button to standard login page.
   $form['persona'] = array(
-    '#markup' => theme('persona_button'),
+    '#theme' => 'persona_button',
     '#weight' => -1,
   );
   // Remove standard sign in form if Persona is taking over completely.
