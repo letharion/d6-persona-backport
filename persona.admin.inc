@@ -26,7 +26,7 @@ function persona_admin_form(array $form, array &$form_state) {
     '#type' => 'checkbox',
     '#title' => t("Use email addresses as usernames"),
     '#default_value' => variable_get('persona_email_usernames'),
-    '#description' => t("When Persona is used to register a new account, the username will be set to the email address used.<br />If this option is not enabled, the username part of the email address will be used as the account username when registering with Persona.<br />When using this option with Persona as the only sign in method, it is useful to disable permission \"change own username\"."),
+    '#description' => t("When Persona is used to register a new account, the username will be set to the email address used.<br />If this option is not enabled, the username part of the email address will be used.<br />When using this option with Persona as the only sign in method, it is useful to disable permission \"change own username\"."),
   );
   $form['general']['persona_new_account_edit'] = array(
     '#type' => 'checkbox',
