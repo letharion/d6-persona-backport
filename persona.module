@@ -129,7 +129,7 @@ function persona_verify() {
   // Get request variables.
   $request = drupal_json_decode(file_get_contents('php://input'));
   // Check XSRF token.
-  if (!isset($request['token']) || ($request['token'] != persona_xsrf_token())) {
+  if ($request['token'] != persona_xsrf_token()) {
     watchdog('persona', "Bad XSRF token.", array(), WATCHDOG_WARNING);
     drupal_add_http_header('Status', '401 Unauthorized');
     throw new Exception();
@@ -156,7 +156,7 @@ function persona_verify() {
   // Get response variables.
   $response = drupal_json_decode($result['data']);
   // HTTP status should be 200, and verification status should be 'okay'.
-  if (($result['code'] != 200) || !isset($response['status']) || ($response['status'] != 'okay')) {
+  if (($result['code'] != 200) || ($response['status'] != 'okay')) {
     watchdog('persona', "Bad response: @response; HTTP status: @code", array(
       '@response' => var_export($response, TRUE),
       '@code' => $result['code'],
