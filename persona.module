@@ -65,6 +65,12 @@ function persona_menu() {
     'delivery callback' => 'drupal_json_output',
     'access callback' => TRUE,
   );
+  $items['user/persona/sign-out'] = array(
+    'type' => MENU_CALLBACK,
+    'page callback' => 'persona_sign_out',
+    'delivery callback' => 'drupal_json_output',
+    'access callback' => TRUE,
+  );
   $items['admin/config/people/persona'] = array(
     'title' => "Persona settings",
     'type' => MENU_NORMAL_ITEM,
@@ -203,14 +209,14 @@ function persona_sign_in() {
   }
   // Is the browser is already signed in as this user.
   if (user_is_logged_in() && ($user->mail == $email)) {
-    drupal_add_http_header('Status', '200 OK');
+    drupal_add_http_header('Status', '204 No Content');
   }
   // Does an account with this email already exist.
   elseif ($account = user_load_by_mail($email)) {
     if ($account->status == 1) {
       watchdog('persona', "Sign into existing account by %email successful.", array('%email' => $account->mail));
       _persona_sign_in($account);
-      drupal_add_http_header('Status', '200 OK');
+      drupal_add_http_header('Status', '204 No Content');
     }
     else {
       watchdog('persona', "Sign in by %email to blocked account denied.", array('%email' => $account->mail), WATCHDOG_WARNING);
@@ -256,6 +262,25 @@ function persona_sign_in() {
     drupal_set_message(t("Only administrators are permitted to register new accounts on this website."), 'error');
     drupal_add_http_header('Status', '403 Forbidden');
   }
+}
+
+/**
+ * Callback function to sign out with Persona.
+ *
+ * Unlike core's sign out handler, this function does not issue an HTTP
+ * redirect.
+ *
+ * @see user_logout()
+ */
+function persona_sign_out() {
+  global $user;
+  if (user_is_logged_in()) {
+    watchdog('user', 'Session closed for %name.', array('%name' => $user->name));
+    module_invoke_all('user_logout', $user);
+    // Destroy the current session, and reset $user to the anonymous user.
+    session_destroy();
+  }
+  drupal_add_http_header('Status', '204 No Content');
 }
 
 /**

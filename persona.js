@@ -63,8 +63,10 @@ Drupal.behaviors.persona = {
           // browser may have already been signed out in a different tab.
           // Redirect to front page.
           $.ajax({
-            type: 'GET',
-            url: relativeUrl('user/logout'),
+            type: 'POST',
+            contentType: 'application/json',
+            url: relativeUrl('user/persona/sign-out'),
+            dataType: 'json',
             complete: function (jqXHR, textStatus) {
               if (goHomeOnSignOut) {
                 window.location = settings.basePath;
