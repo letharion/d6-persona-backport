@@ -137,9 +137,8 @@ function _persona_request_variables() {
 /**
  * Ensures XSRF token is correct.
  */
-function _persona_check_xsrf_token() {
-  $request = _persona_request_variables();
-  if ($request['token'] != persona_xsrf_token()) {
+function _persona_check_xsrf_token($token) {
+  if ($token != persona_xsrf_token()) {
     watchdog('persona', "Bad XSRF token.", array(), WATCHDOG_WARNING);
     throw new Exception();
   }
@@ -151,9 +150,8 @@ function _persona_check_xsrf_token() {
  * @return string
  *   Email address that the user has signed in with.
  */
-function persona_verify() {
+function persona_verify($assertion) {
   global $base_url;
-  $request = _persona_request_variables();
   // Verify assertion with Mozilla's Remote Verification API.
   // TODO: Support local verification once API has stabilized, for example with
   // https://github.com/Falco20019/php-browseridlib
@@ -168,7 +166,7 @@ function persona_verify() {
     'method' => 'POST',
     'headers' => array('Content-Type' => 'application/json'),
     'data' => drupal_json_encode(array(
-      'assertion' => $request['assertion'],
+      'assertion' => $assertion,
       'audience' => $base_url,
     )),
     'context' => stream_context_create($context_options),
@@ -212,9 +210,10 @@ function _persona_sign_in($account) {
  */
 function persona_sign_in() {
   global $user;
+  $request = _persona_request_variables();
   try {
-    _persona_check_xsrf_token();
-    $email = persona_verify();
+    _persona_check_xsrf_token($request['token']);
+    $email = persona_verify($request['assertion']);
   }
   catch (Exception $e) {
     drupal_add_http_header('Status', '401 Unauthorized');
@@ -288,8 +287,9 @@ function persona_sign_in() {
  */
 function persona_sign_out() {
   global $user;
+  $request = _persona_request_variables();
   try {
-    _persona_check_xsrf_token();
+    _persona_check_xsrf_token($request['token']);
   }
   catch (Exception $e) {
     return;
