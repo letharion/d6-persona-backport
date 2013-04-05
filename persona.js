@@ -2,8 +2,8 @@
 
 Drupal.behaviors.persona = {
   attach: function (context, settings) {
-    // Sign out should only redirect to home in the tab where it was actioned.
-    var goHomeOnSignOut = false;
+    var instigator = false;
+    var tabHasFocus = false;
 
     /**
      * Generates a relative URL for the given Drupal path. Optionally adds
@@ -26,34 +26,58 @@ Drupal.behaviors.persona = {
       return url;
     }
 
+    // Determine when the current tab has the focus.
+    $(window).focus(function () {
+      tabHasFocus = true;
+    });
+    $(window).blur(function () {
+      tabHasFocus = false;
+    });
+    // Switch off Persona when leaving the page to prevent it from issuing a
+    // rouge onlogout if it hadn't finished initialising.
+    // @see https://github.com/mozilla/browserid/issues/2560
+    $(window).bind('beforeunload', function (event) {
+      navigator.id.watch({
+        loggedInUser: settings.persona.email,
+        onlogin: function (assertion) {},
+        onlogout: function () {}
+      });
+    });
     // Register callbacks to be invoked when a user signs in or out.
     navigator.id.watch({
       loggedInUser: settings.persona.email,
       onlogin: function (assertion) {
-        // Attempt to sign in to the site and then reload the page.
-        $.ajax({
-          type: 'POST',
-          contentType: 'application/json',
-          url: relativeUrl('user/persona/sign-in'),
-          data: JSON.stringify({
-            token: settings.persona.token,
-            assertion: assertion
-          }),
-          dataType: 'json',
-          error: function (jqXHR, textStatus, errorThrown) {
-            // Tell Persona that it didn't work out.
-            navigator.id.logout();
-          },
-          success: function (path, textStatus, jqXHR) {
-            // Redirect if path provided, otherwise just reload the page.
-            if (path) {
-              window.location = relativeUrl(path, settings.persona.currentPath);
+        if (instigator || tabHasFocus) {
+          // Attempt to sign in to the site and then reload the page.
+          $.ajax({
+            type: 'POST',
+            contentType: 'application/json',
+            url: relativeUrl('user/persona/sign-in'),
+            data: JSON.stringify({
+              token: settings.persona.token,
+              assertion: assertion
+            }),
+            dataType: 'json',
+            error: function (jqXHR, textStatus, errorThrown) {
+              // Tell Persona that it didn't work out.
+              navigator.id.logout();
+            },
+            success: function (path, textStatus, jqXHR) {
+              // Redirect if path provided, otherwise just reload the page.
+              if (path) {
+                window.location = relativeUrl(path, settings.persona.currentPath);
+              }
+              else {
+                window.location.reload();
+              }
             }
-            else {
-              window.location.reload();
-            }
-          }
-        });
+          });
+        }
+        else {
+          window.setTimeout(function () {
+            window.location.reload()
+          }, 4000);
+        }
       },
       onlogout: function () {
         // Only sign out from the website if it is already signed in. This
@@ -68,7 +92,8 @@ Drupal.behaviors.persona = {
             }),
             dataType: 'json',
             complete: function (jqXHR, textStatus) {
-              if (goHomeOnSignOut) {
+              if (tabHasFocus) {
+                // Redirect the current tab to the homepage.
                 window.location = settings.basePath;
               }
               else {
@@ -82,19 +107,10 @@ Drupal.behaviors.persona = {
         }
       }
     });
-    // Switch off Persona when leaving the page to prevent it from issuing a
-    // rouge onlogout if it hadn't finished initialising.
-    // @see https://github.com/mozilla/browserid/issues/2560
-    $(window).bind('beforeunload', function (event) {
-      navigator.id.watch({
-        loggedInUser: settings.persona.email,
-        onlogin: function (assertion) {},
-        onlogout: function () {}
-      });
-    });
     // Attach the buttons.
     $('.persona-sign-in').click(function (event) {
       // Request Persona sign in.
+      instigator = true;
       navigator.id.request({
         siteName: settings.persona.siteName,
         siteLogo: settings.persona.siteLogo,
@@ -105,8 +121,6 @@ Drupal.behaviors.persona = {
     // Only attach to sign out buttons if we are signed in with Persona.
     if (settings.persona.email) {
       $('.persona-sign-out').click(function (event) {
-        // Make this tab redirect to home.
-        goHomeOnSignOut = true;
         navigator.id.logout();
         // Prevent the browser from following a link.
         return false;
