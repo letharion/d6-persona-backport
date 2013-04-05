@@ -1,3 +1,8 @@
+/**
+ * @file
+ * Javascript for the Persona admin page.
+ */
+
 (function ($) {
 
 Drupal.behaviors.personaAdmin = {

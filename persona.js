@@ -1,3 +1,8 @@
+/**
+ * @file
+ * Javascript for controlling signing in and out with Persona.
+ */
+
 (function ($) {
 
 Drupal.behaviors.persona = {

@@ -1,7 +1,7 @@
 <?php
 /**
  * @file
- * Displays and admin form to change Persona settings.
+ * Admin form to change Persona settings.
  */
 
 /**
