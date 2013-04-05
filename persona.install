@@ -42,7 +42,7 @@ function persona_requirements($phase) {
  */
 function persona_install() {
   // General settings.
-  variable_set('persona_takeover_login', FALSE);
+  variable_set('persona_takeover', FALSE);
   variable_set('persona_email_usernames', FALSE);
   variable_set('persona_new_account_edit', FALSE);
   // Button settings.
@@ -70,7 +70,7 @@ function persona_install() {
  */
 function persona_uninstall() {
   // General settings.
-  variable_del('persona_takeover_login');
+  variable_del('persona_takeover');
   variable_del('persona_email_usernames');
   variable_del('persona_new_account_edit');
   // Button settings.

@@ -100,7 +100,7 @@ function persona_menu() {
  * Implements hook_menu_alter().
  */
 function persona_menu_alter(array &$items) {
-  if (variable_get('persona_takeover_login')) {
+  if (variable_get('persona_takeover')) {
     unset($items['user/register']);
     unset($items['user/login']);
     unset($items['user/password']);
@@ -438,7 +438,7 @@ function persona_block_view($delta) {
  * Implements hook_block_view_alter().
  */
 function persona_block_view_alter(array &$data, $block) {
-  if (variable_get('persona_takeover_login') && $block->module == 'user' && $block->delta == 'login') {
+  if (variable_get('persona_takeover') && $block->module == 'user' && $block->delta == 'login') {
     $data['content'] = array();
   }
 }
@@ -447,7 +447,7 @@ function persona_block_view_alter(array &$data, $block) {
  * Implements hook_form_FORM_ID_alter().
  */
 function persona_form_user_profile_form_alter(array &$form, array &$form_state, $form_id) {
-  if (variable_get('persona_takeover_login')) {
+  if (variable_get('persona_takeover')) {
     $form['account']['mail']['#type'] = 'value';
     $form['account']['mail']['#value'] = $form['account']['mail']['#default_value'];
     $form['account']['pass']['#type'] = 'value';
@@ -465,7 +465,7 @@ function persona_form_user_login_alter(array &$form, array &$form_state, $form_i
     '#weight' => -1,
   );
   // Remove standard sign in form if Persona is taking over completely.
-  if (variable_get('persona_takeover_login')) {
+  if (variable_get('persona_takeover')) {
     unset($form['name']);
     unset($form['pass']);
     unset($form['actions']);
