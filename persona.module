@@ -5,6 +5,19 @@
  */
 
 /**
+ * Creates a secure token for preventing Login XSRF.
+ *
+ * @return string
+ *   Secure token.
+ *
+ * @see drupal_get_token()
+ * @see https://developer.mozilla.org/en-US/docs/Persona/Security_Considerations
+ */
+function _persona_xsrf_token() {
+  return drupal_hmac_base64('persona-xsrf-token', session_api_get_sid() . drupal_get_private_key() . drupal_get_hash_salt());
+}
+
+/**
  * Implements hook_init().
  */
 function persona_init() {
@@ -15,10 +28,10 @@ function persona_init() {
   drupal_add_http_header('X-UA-Compatible', 'IE=Edge');
   // Add JavaScript settings.
   $settings = array(
+    // Token to prevent Login XSRF.
+    'token' => _persona_xsrf_token(),
     // Tell Persona who is signed in.
     'email' => (user_is_logged_in() && isset($_SESSION['persona_sign_in'])) ? $user->mail : NULL,
-    // Token to prevent Login XSRF.
-    'token' => persona_xsrf_token(),
     // Add site name to display on Mozilla Persona dialog.
     'siteName' => variable_get('site_name'),
     // Add some settings that core doesn't provide.
@@ -84,6 +97,18 @@ function persona_menu() {
 }
 
 /**
+ * Implements hook_menu_alter().
+ */
+function persona_menu_alter(array &$items) {
+  if (variable_get('persona_takeover_login')) {
+    unset($items['user/register']);
+    unset($items['user/login']);
+    unset($items['user/password']);
+    unset($items['user/logout']);
+  }
+}
+
+/**
  * Determines if a user with a specific name already exists.
  *
  * @param string $name
@@ -138,7 +163,7 @@ function _persona_request_variables() {
  * Ensures XSRF token is correct.
  */
 function _persona_check_xsrf_token($token) {
-  if ($token != persona_xsrf_token()) {
+  if ($token != _persona_xsrf_token()) {
     watchdog('persona', "Bad XSRF token.", array(), WATCHDOG_WARNING);
     throw new Exception();
   }
@@ -220,7 +245,7 @@ function persona_sign_in() {
     drupal_set_message(t("Sorry, there was a problem signing you in with Persona."), 'error');
     return;
   }
-  // Is the browser is already signed in as this user.
+  // Is the browser already signed in as this user.
   if (user_is_logged_in() && ($user->mail == $email)) {
     drupal_add_http_header('Status', '204 No Content');
   }
@@ -419,18 +444,6 @@ function persona_block_view_alter(array &$data, $block) {
 }
 
 /**
- * Implements hook_menu_alter().
- */
-function persona_menu_alter(array &$items) {
-  if (variable_get('persona_takeover_login')) {
-    unset($items['user/register']);
-    unset($items['user/login']);
-    unset($items['user/password']);
-    unset($items['user/logout']);
-  }
-}
-
-/**
  * Implements hook_form_FORM_ID_alter().
  */
 function persona_form_user_profile_form_alter(array &$form, array &$form_state, $form_id) {
@@ -446,7 +459,7 @@ function persona_form_user_profile_form_alter(array &$form, array &$form_state, 
  * Implements hook_form_FORM_ID_alter().
  */
 function persona_form_user_login_alter(array &$form, array &$form_state, $form_id) {
-  // Add Persona sign in button to standard login page.
+  // Add Persona sign in button to standard sign in page.
   $form['persona'] = array(
     '#theme' => 'persona_button',
     '#weight' => -1,
@@ -485,17 +498,4 @@ function persona_page_alter(array &$page) {
 function persona_toolbar_pre_render(array $toolbar) {
   $toolbar['toolbar_user']['#links']['logout']['attributes']['class'][] = 'persona-sign-out';
   return $toolbar;
-}
-
-/**
- * Creates a secure token for preventing Login XSRF.
- *
- * @return string
- *   Secure token.
- *
- * @see drupal_get_token()
- * @see http://www.adambarth.com/papers/2008/barth-jackson-mitchell-b.pdf
- */
-function persona_xsrf_token() {
-  return drupal_hmac_base64('persona-xsrf-token', session_api_get_sid() . drupal_get_private_key() . drupal_get_hash_salt());
 }
