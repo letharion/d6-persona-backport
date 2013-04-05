@@ -28,7 +28,7 @@ function persona_init() {
   drupal_add_http_header('X-UA-Compatible', 'IE=Edge');
   // Add JavaScript settings.
   $settings = array(
-    // Token to prevent Login XSRF.
+    // Token to prevent XSRF.
     'token' => _persona_xsrf_token(),
     // Tell Persona who is signed in.
     'email' => (user_is_logged_in() && isset($_SESSION['persona_sign_in'])) ? $user->mail : NULL,
