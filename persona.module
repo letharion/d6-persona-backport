@@ -170,7 +170,7 @@ function _persona_check_xsrf_token($token) {
 }
 
 /**
- * Verifies the Persona POST data.
+ * Verifies a Persona assertion and determines the email address.
  *
  * @return string
  *   Email address that the user has signed in with.
