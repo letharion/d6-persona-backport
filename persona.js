@@ -7,7 +7,7 @@
 
 Drupal.behaviors.persona = {
   attach: function (context, settings) {
-    var instigator = false;
+    var requester = false;
     var tabHasFocus = false;
 
     /**
@@ -52,7 +52,7 @@ Drupal.behaviors.persona = {
     navigator.id.watch({
       loggedInUser: settings.persona.email,
       onlogin: function (assertion) {
-        if (instigator || tabHasFocus) {
+        if (requester || tabHasFocus) {
           // Attempt to sign in to the site and then reload the page.
           $.ajax({
             type: 'POST',
@@ -115,7 +115,7 @@ Drupal.behaviors.persona = {
     // Attach the buttons.
     $('.persona-sign-in').click(function (event) {
       // Request Persona sign in.
-      instigator = true;
+      requester = true;
       navigator.id.request({
         siteName: settings.persona.siteName,
         siteLogo: settings.persona.siteLogo,
