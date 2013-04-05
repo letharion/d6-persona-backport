@@ -420,7 +420,7 @@ function persona_block_save($delta = '', array $edit = array()) {
  */
 function persona_block_view($delta) {
   // If we are on the standard sign in page, don't display this block.
-  if (arg(0) == 'user' && !is_numeric(arg(1))) {
+  if (!user_is_logged_in() && arg(0) == 'user' && !is_numeric(arg(1))) {
     return array();
   }
   // Create the buttons.
