@@ -9,6 +9,7 @@ Drupal.behaviors.persona = {
   attach: function (context, settings) {
     var requester = false;
     var tabHasFocus = false;
+    var signInPath = 'user/persona/sign-in';
 
     /**
      * Generates a relative URL for the given Drupal path. Optionally adds
@@ -29,6 +30,20 @@ Drupal.behaviors.persona = {
         url += 'destination=' + Drupal.encodePath(destination);
       }
       return url;
+    }
+
+    /**
+     * Requests a signed identity assertion from the browser.
+     */
+    function request() {
+      requester = true;
+      // Request Persona sign in.
+      navigator.id.request({
+        siteName: settings.persona.siteName,
+        siteLogo: settings.persona.siteLogo,
+        termsOfService: settings.persona.termsOfService,
+        privacyPolicy: settings.persona.privacyPolicy
+      });
     }
 
     // Determine when the current tab has the focus.
@@ -57,7 +72,7 @@ Drupal.behaviors.persona = {
           $.ajax({
             type: 'POST',
             contentType: 'application/json',
-            url: relativeUrl('user/persona/sign-in'),
+            url: relativeUrl(signInPath),
             data: JSON.stringify({
               token: settings.persona.token,
               assertion: assertion
@@ -114,14 +129,12 @@ Drupal.behaviors.persona = {
     });
     // Attach the buttons.
     $('.persona-sign-in').click(function (event) {
-      // Request Persona sign in.
-      requester = true;
-      navigator.id.request({
-        siteName: settings.persona.siteName,
-        siteLogo: settings.persona.siteLogo,
-        termsOfService: settings.persona.termsOfService,
-        privacyPolicy: settings.persona.privacyPolicy
-      });
+      request();
+    });
+    $('.persona-change-email').click(function (event) {
+      // Override sign in callback path to change email.
+      signInPath = 'user/persona/change-email';
+      request();
     });
     // Only attach to sign out buttons if we are signed in with Persona.
     if (settings.persona.email) {

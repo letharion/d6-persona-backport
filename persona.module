@@ -78,6 +78,12 @@ function persona_menu() {
     'delivery callback' => 'drupal_json_output',
     'access callback' => TRUE,
   );
+  $items['user/persona/change-email'] = array(
+    'type' => MENU_CALLBACK,
+    'page callback' => 'persona_change_email',
+    'delivery callback' => 'drupal_json_output',
+    'access callback' => TRUE,
+  );
   $items['user/persona/sign-out'] = array(
     'type' => MENU_CALLBACK,
     'page callback' => 'persona_sign_out',
@@ -231,6 +237,26 @@ function _persona_sign_in($account) {
 }
 
 /**
+ * Attempts to sign into an existing account.
+ *
+ * @param $account
+ *   Account to sign into.
+ */
+function _persona_existing_account_sign_in($account) {
+  if ($account->status) {
+    watchdog('persona', "Sign into existing account by %email successful.", array('%email' => $account->mail));
+    _persona_sign_in($account);
+    drupal_add_http_header('Status', '204 No Content');
+  }
+  else {
+    watchdog('persona', "Sign in by %email to blocked account denied.", array('%email' => $account->mail), WATCHDOG_WARNING);
+    drupal_set_message(t("You are not allowed to sign in at this time."), 'error');
+    drupal_add_http_header('Status', '403 Forbidden');
+  }
+  return $account->status;
+}
+
+/**
  * Callback function to sign in with Persona.
  */
 function persona_sign_in() {
@@ -251,16 +277,7 @@ function persona_sign_in() {
   }
   // Does an account with this email already exist.
   elseif ($account = user_load_by_mail($email)) {
-    if ($account->status == 1) {
-      watchdog('persona', "Sign into existing account by %email successful.", array('%email' => $account->mail));
-      _persona_sign_in($account);
-      drupal_add_http_header('Status', '204 No Content');
-    }
-    else {
-      watchdog('persona', "Sign in by %email to blocked account denied.", array('%email' => $account->mail), WATCHDOG_WARNING);
-      drupal_set_message(t("You are not allowed to sign in at this time."), 'error');
-      drupal_add_http_header('Status', '403 Forbidden');
-    }
+    _persona_existing_account_sign_in($account);
   }
   // Are users allows to create new accounts?
   elseif (variable_get('user_register')) {
@@ -299,6 +316,55 @@ function persona_sign_in() {
     watchdog('persona', "Attempted sign in without an account by %email.", array('%email' => $email), WATCHDOG_WARNING);
     drupal_set_message(t("Only administrators are permitted to register new accounts on this website."), 'error');
     drupal_add_http_header('Status', '403 Forbidden');
+  }
+}
+
+/**
+ * Callback function to change email address with Persona.
+ */
+function persona_change_email() {
+  global $user;
+  // Make sure the browser is signed in.
+  if (!user_is_logged_in()) {
+    // The user was probably signed out because they clicked "This is not me"
+    // when there was another browser tab open on the site. Try to sign them in.
+    persona_sign_in();
+    return;
+  }
+  $request = _persona_request_variables();
+  try {
+    _persona_check_xsrf_token($request['token']);
+    $email = persona_verify($request['assertion']);
+  }
+  catch (Exception $e) {
+    drupal_add_http_header('Status', '401 Unauthorized');
+    drupal_set_message(t("Sorry, there was a problem changing your email address with Persona."), 'error');
+    return;
+  }
+  // Check if the user is using this email address in another account.
+  $account = user_load_by_mail($email);
+  if ($account) {
+    // Sign into existing account as it is all we can do...
+    if (_persona_existing_account_sign_in($account)) {
+      drupal_set_message(t("You are already using %email for another account, which you have now been signed into.", 
+        array('%email' => $user->mail)), 'error');
+    }
+  }
+  else {
+    // Update account email address.
+    $old_email = $user->mail;
+    $user->mail = $email;
+    if (variable_get('persona_email_usernames')) {
+      // Update account username.
+      $user->name = _persona_extract_username($email);
+    }
+    user_save($user);
+    watchdog('persona', "%old_email changed to %email.", array(
+      '%name' => $old_email,
+      '%email' => $email,
+    ));
+    drupal_set_message(t("Your email address has been changed to %email.", array('%email' => $user->mail)));
+    drupal_add_http_header('Status', '204 No Content');
   }
 }
 
@@ -366,6 +432,10 @@ function theme_persona_button(array $variables) {
     case 'switch_account':
       $text = t("Switch account");
       $classes[] = 'persona-sign-in';
+      break;
+    case 'change_email':
+      $text = t("Change account email");
+      $classes[] = 'persona-change-email';
       break;
     case 'sign_out':
       $text = t("Sign out");
@@ -470,6 +540,19 @@ function persona_form_user_login_alter(array &$form, array &$form_state, $form_i
     unset($form['pass']);
     unset($form['actions']);
   }
+}
+
+/**
+ * Implements hook_user_view().
+ */
+function persona_user_view($account) {
+  global $user;
+  // If a different user is being displayed then do nothing.
+  if ($account->uid != $user->uid) {
+    return;
+  }
+  // Add the Change Email button.
+  $account->content['persona'] = array('#theme' => 'persona_button', '#type' => 'change_email');
 }
 
 /**
