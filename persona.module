@@ -507,7 +507,12 @@ function persona_block_view($delta) {
 /**
  * Implements hook_block_view_alter().
  */
-function persona_block_view_alter(array &$data, $block) {
+function persona_block_view_alter(&$data, $block) {
+  // Make sure $data is an array.
+  // @see https://drupal.org/node/1967802
+  if (!is_array($data)) {
+    return;
+  }
   if (variable_get('persona_takeover') && $block->module == 'user' && $block->delta == 'login') {
     $data['content'] = array();
   }
