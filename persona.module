@@ -5,23 +5,14 @@
  */
 
 /**
- * Creates a secure token for preventing Login XSRF.
- *
- * @return string
- *   Secure token.
- *
- * @see drupal_get_token()
- * @see https://developer.mozilla.org/en-US/docs/Persona/Security_Considerations
- */
-function _persona_xsrf_token() {
-  return drupal_hmac_base64('persona-xsrf-token', session_api_get_sid() . drupal_get_private_key() . drupal_get_hash_salt());
-}
-
-/**
  * Implements hook_init().
  */
 function persona_init() {
   global $user;
+  // Switch off caching because the token must match the session.
+  drupal_page_is_cacheable(FALSE);
+  // Make sure we have a session so the token doesn't change.
+  $_SESSION['persona'] = TRUE;
   // Make sure Internet Explorer is not in "Compatibility Mode". For
   // consistency, this is done even when not using Persona.
   // @see https://developer.mozilla.org/en-US/docs/Persona/Browser_compatibility
@@ -29,7 +20,7 @@ function persona_init() {
   // Add JavaScript settings.
   $settings = array(
     // Token to prevent XSRF.
-    'token' => _persona_xsrf_token(),
+    'token' => drupal_get_token('persona-xsrf'),
     // Tell Persona who is signed in.
     'email' => (user_is_logged_in() && isset($_SESSION['persona_sign_in'])) ? $user->mail : NULL,
     // Add site name to display on Mozilla Persona dialog.
@@ -169,7 +160,7 @@ function _persona_request_variables() {
  * Ensures XSRF token is correct.
  */
 function _persona_check_xsrf_token($token) {
-  if ($token != _persona_xsrf_token()) {
+  if (!drupal_valid_token($token, 'persona-xsrf')) {
     watchdog('persona', "Bad XSRF token.", array(), WATCHDOG_WARNING);
     throw new Exception();
   }
