@@ -315,13 +315,6 @@ function persona_sign_in() {
  */
 function persona_change_email() {
   global $user;
-  // Make sure the browser is signed in.
-  if (!user_is_logged_in()) {
-    // The user was probably signed out because they clicked "This is not me"
-    // when there was another browser tab open on the site. Try to sign them in.
-    persona_sign_in();
-    return;
-  }
   $request = _persona_request_variables();
   try {
     _persona_check_xsrf_token($request['token']);
