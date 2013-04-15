@@ -5,22 +5,28 @@
  */
 
 /**
+ * Returns the session's XSRF token.
+ */
+function persona_xsrf_token() {
+  // Make sure we have a session.
+  drupal_session_start();
+  if (!isset($_SESSION['persona_xsrf_token'])) {
+    $_SESSION['persona_xsrf_token'] = drupal_get_token('persona-xsrf');
+  }
+  return $_SESSION['persona_xsrf_token'];
+}
+
+/**
  * Implements hook_init().
  */
 function persona_init() {
   global $user;
-  // Switch off caching because the token must match the session.
-  drupal_page_is_cacheable(FALSE);
-  // Make sure we have a session so the token doesn't change.
-  $_SESSION['persona'] = TRUE;
   // Make sure Internet Explorer is not in "Compatibility Mode". For
   // consistency, this is done even when not using Persona.
   // @see https://developer.mozilla.org/en-US/docs/Persona/Browser_compatibility
   drupal_add_http_header('X-UA-Compatible', 'IE=Edge');
   // Add JavaScript settings.
   $settings = array(
-    // Token to prevent XSRF.
-    'token' => drupal_get_token('persona-xsrf'),
     // Tell Persona who is signed in.
     'email' => (user_is_logged_in() && isset($_SESSION['persona_sign_in'])) ? $user->mail : NULL,
     // Add site name to display on Mozilla Persona dialog.
@@ -30,6 +36,11 @@ function persona_init() {
     'cleanUrls' => variable_get('clean_url'),
     'currentPath' => (current_path() == variable_get('site_frontpage', 'node')) ? '' : current_path(),
   );
+  // Don't add the XSRF token if the user is not signed in as the page may be
+  // cached. This also avoids creating a session.
+  if (user_is_logged_in()) {
+    $settings['token'] = persona_xsrf_token();
+  }
   // Add the legal documents if they are both provided.
   if ((variable_get('persona_terms_link') != '') && (variable_get('persona_privacy_link') != '')) {
     $settings += array(
@@ -63,6 +74,12 @@ function persona_init() {
  * Implements hook_menu().
  */
 function persona_menu() {
+  $items['user/persona/get-token'] = array(
+    'type' => MENU_CALLBACK,
+    'page callback' => 'persona_get_token',
+    'delivery callback' => 'drupal_json_output',
+    'access callback' => TRUE,
+  );
   $items['user/persona/sign-in'] = array(
     'type' => MENU_CALLBACK,
     'page callback' => 'persona_sign_in',
@@ -103,6 +120,16 @@ function persona_menu_alter(array &$items) {
     unset($items['user/password']);
     unset($items['user/logout']);
   }
+}
+
+/**
+ * Callback function to retrieve XSRF token.
+ */
+function persona_get_token() {
+  // Don't cache this page.
+  drupal_page_is_cacheable(FALSE);
+  drupal_add_http_header('Status', '200 OK');
+  return persona_xsrf_token();
 }
 
 /**
@@ -160,7 +187,7 @@ function _persona_request_variables() {
  * Ensures XSRF token is correct.
  */
 function _persona_check_xsrf_token($token) {
-  if (!drupal_valid_token($token, 'persona-xsrf')) {
+  if ($token != $_SESSION['persona_xsrf_token']) {
     watchdog('persona', "Bad XSRF token.", array(), WATCHDOG_WARNING);
     throw new Exception();
   }
