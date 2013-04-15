@@ -5,7 +5,10 @@
  */
 
 /**
- * Returns the session's XSRF token.
+ * Gets the session's XSRF token, generating it if necessary.
+ *
+ * @return string
+ *   XSRF token.
  */
 function persona_xsrf_token() {
   // Make sure we have a session.
