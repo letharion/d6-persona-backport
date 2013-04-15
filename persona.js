@@ -36,6 +36,18 @@ Drupal.behaviors.persona = {
      * Requests a signed identity assertion from the browser.
      */
     function request() {
+      if (!settings.persona.token) {
+        // Get the XSRF token asynchronously.
+        $.ajax({
+          type: 'GET',
+          contentType: 'application/json',
+          url: relativeUrl('user/persona/get-token'),
+          dataType: 'json',
+          success: function (data, textStatus, jqXHR) {
+            settings.persona.token = data;
+          }
+        });
+      }
       requester = true;
       // Request Persona sign in.
       navigator.id.request({
@@ -129,16 +141,6 @@ Drupal.behaviors.persona = {
     });
     // Attach the buttons.
     $('.persona-sign-in').click(function (event) {
-      // Get the XSRF token asynchronously.
-      $.ajax({
-        type: 'GET',
-        contentType: 'application/json',
-        url: relativeUrl('user/persona/get-token'),
-        dataType: 'json',
-        success: function (data, textStatus, jqXHR) {
-          settings.persona.token = data;
-        }
-      });
       request();
     });
     $('.persona-change-email').click(function (event) {
