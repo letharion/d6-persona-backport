@@ -186,7 +186,7 @@ function _persona_request_variables() {
  * Ensures XSRF token is correct.
  */
 function _persona_check_xsrf_token($token) {
-  if ($token != $_SESSION['persona_xsrf_token']) {
+  if (!isset($_SESSION['persona_xsrf_token']) || ($_SESSION['persona_xsrf_token'] != $token)) {
     watchdog('persona', "Bad XSRF token.", array(), WATCHDOG_WARNING);
     throw new Exception();
   }
