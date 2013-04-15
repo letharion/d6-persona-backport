@@ -61,13 +61,11 @@ function persona_init() {
   // this at the bottom of the page body, but this causes a significant delay
   // before Drupal behaviours are activated causing visible page rearrangement.
   // @see https://developer.mozilla.org/en-US/docs/Persona/Quick_Setup
-  // TODO: Optionally host this file locally.
   // TODO: Conditionally include this file only for browsers that don't
   // implement navigator.id natively (currently all of them).
   // @see https://developer.mozilla.org/en-US/docs/DOM/navigator.id
   // @see http://drupal.org/node/865536
   drupal_add_js('https://login.persona.org/include.js', array(
-    'type' => 'external',
     'group' => JS_LIBRARY,
     'every_page' => TRUE,
   ));
