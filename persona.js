@@ -82,10 +82,10 @@ Drupal.behaviors.persona = {
               // Tell Persona that it didn't work out.
               navigator.id.logout();
             },
-            success: function (path, textStatus, jqXHR) {
+            success: function (data, textStatus, jqXHR) {
               // Redirect if path provided, otherwise just reload the page.
-              if (path) {
-                window.location = relativeUrl(path, settings.persona.currentPath);
+              if (data) {
+                window.location = relativeUrl(data, settings.persona.currentPath);
               }
               else {
                 window.location.reload();
