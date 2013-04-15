@@ -126,8 +126,6 @@ function persona_menu_alter(array &$items) {
  * Callback function to retrieve XSRF token.
  */
 function persona_get_token() {
-  // Don't cache this page.
-  drupal_page_is_cacheable(FALSE);
   drupal_add_http_header('Status', '200 OK');
   return persona_xsrf_token();
 }
