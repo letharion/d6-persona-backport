@@ -33,13 +33,14 @@ Drupal.behaviors.persona = {
     }
 
     /**
-     * Requests a signed identity assertion from the browser.
+     * Gets the XSRF token if it isn't defined.
      */
-    function request() {
+    function getToken(async = true) {
       if (!settings.persona.token) {
         // Get the XSRF token asynchronously.
         $.ajax({
           type: 'GET',
+          async: async,
           contentType: 'application/json',
           url: relativeUrl('user/persona/get-token'),
           dataType: 'json',
@@ -48,6 +49,14 @@ Drupal.behaviors.persona = {
           }
         });
       }
+    }
+
+    /**
+     * Requests a signed identity assertion from the browser.
+     */
+    function request() {
+      // Get the token asynchronously if necessary.
+      getToken();
       requester = true;
       // Request Persona sign in.
       navigator.id.request({
@@ -80,6 +89,8 @@ Drupal.behaviors.persona = {
       loggedInUser: settings.persona.email,
       onlogin: function (assertion) {
         if (requester || tabHasFocus) {
+          // Get the token synchronously if necessary.
+          getToken(false);
           // Attempt to sign in to the site and then reload the page.
           $.ajax({
             type: 'POST',
