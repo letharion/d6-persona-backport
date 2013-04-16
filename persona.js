@@ -55,8 +55,6 @@ Drupal.behaviors.persona = {
      * Requests a signed identity assertion from the browser.
      */
     function request() {
-      // Get the token asynchronously if necessary.
-      getToken();
       requester = true;
       // Request Persona sign in.
       navigator.id.request({
@@ -65,6 +63,8 @@ Drupal.behaviors.persona = {
         termsOfService: settings.persona.termsOfService,
         privacyPolicy: settings.persona.privacyPolicy
       });
+      // Get the token asynchronously if necessary.
+      getToken();
     }
 
     // Determine when the current tab has the focus.
