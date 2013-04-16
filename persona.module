@@ -77,7 +77,7 @@ function persona_init() {
 function persona_menu() {
   $items['user/persona/get-token'] = array(
     'type' => MENU_CALLBACK,
-    'page callback' => 'persona_get_token',
+    'page callback' => 'persona_xsrf_token',
     'delivery callback' => 'drupal_json_output',
     'access callback' => TRUE,
   );
@@ -121,14 +121,6 @@ function persona_menu_alter(array &$items) {
     unset($items['user/password']);
     unset($items['user/logout']);
   }
-}
-
-/**
- * Callback function to retrieve XSRF token.
- */
-function persona_get_token() {
-  drupal_add_http_header('Status', '200 OK');
-  return persona_xsrf_token();
 }
 
 /**
