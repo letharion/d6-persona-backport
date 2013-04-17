@@ -7,6 +7,11 @@
 
 Drupal.behaviors.persona = {
   attach: function (context, settings) {
+    // If navigator.id is not available then do nothing.
+    if (!navigator.id) {
+      return;
+    }
+
     var requester = false;
     var tabHasFocus = false;
     var signInPath = 'user/persona/sign-in';
