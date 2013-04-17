@@ -1,6 +1,8 @@
 /**
  * @file
- * Javascript for controlling signing in and out with Persona.
+ * JavaScript for communicating with navigator.id
+ *
+ * @see https://developer.mozilla.org/en-US/docs/DOM/navigator.id
  */
 
 (function ($) {
