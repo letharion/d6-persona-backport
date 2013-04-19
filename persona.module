@@ -24,10 +24,19 @@ function persona_xsrf_token() {
  */
 function persona_init() {
   global $user;
-  // Make sure Internet Explorer is not in "Compatibility Mode". For
-  // consistency, this is done even when not using Persona.
+  // Send X-UA-Compatible HTTP header to force IE to use the most recent
+  // rendering engine or use Chrome's frame rendering engine if available. It is
+  // not possible to use drupal_add_http_header() as Drupal 7 does not store
+  // HTTP headers in the page cache.
   // @see https://developer.mozilla.org/en-US/docs/Persona/Browser_compatibility
-  drupal_add_http_header('X-UA-Compatible', 'IE=Edge');
+  $element = array(
+    '#tag' => 'meta',
+    '#attributes' => array(
+      'http-equiv' => 'X-UA-Compatible',
+      'content' => 'IE=edge,chrome=1',
+    ),
+  );
+  drupal_add_html_head($element, 'x_ua_compatible');
   // Add JavaScript settings.
   $settings = array(
     // Tell Persona who is signed in.
