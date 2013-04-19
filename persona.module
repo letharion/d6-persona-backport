@@ -459,9 +459,14 @@ function theme_persona_button(array $variables) {
     $classes[] = $style;
   }
   // Generate HTML.
-  $html = '<div style="cursor: pointer;" class="' . implode(' ', $classes) . '"><span>';
-  $html .= $text;
-  $html .= '</span></div>';
+  $text = '<span>' . $text . '</span>';
+  $attributes = array('class' => $classes);
+  if ($type == 'sign_out' && !isset($_SESSION['persona_sign_in'])) {
+    $html = l($text, 'user/logout', array('attributes' => $attributes, 'html' => TRUE));
+  }
+  else {
+    $html = '<div ' .  drupal_attributes($attributes) . '>' . $text . '</div>';
+  }
   return $html;
 }
 
