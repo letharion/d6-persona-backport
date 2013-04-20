@@ -20,6 +20,16 @@ function persona_xsrf_token() {
 }
 
 /**
+ * Ensures XSRF token is correct.
+ */
+function _persona_check_xsrf_token($token) {
+  if (!isset($_SESSION['persona_xsrf_token']) || ($_SESSION['persona_xsrf_token'] != $token)) {
+    watchdog('persona', "Bad XSRF token.", array(), WATCHDOG_WARNING);
+    throw new Exception();
+  }
+}
+
+/**
  * Adds the login.persona.org JavaScript shiv.
  *
  * @param bool $every_page
@@ -195,16 +205,6 @@ function _persona_extract_username($email) {
  */
 function _persona_request_variables() {
   return drupal_json_decode(file_get_contents('php://input'));
-}
-
-/**
- * Ensures XSRF token is correct.
- */
-function _persona_check_xsrf_token($token) {
-  if (!isset($_SESSION['persona_xsrf_token']) || ($_SESSION['persona_xsrf_token'] != $token)) {
-    watchdog('persona', "Bad XSRF token.", array(), WATCHDOG_WARNING);
-    throw new Exception();
-  }
 }
 
 /**
