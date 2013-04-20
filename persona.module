@@ -323,6 +323,7 @@ function persona_sign_in() {
   }
   // Is the browser already signed in as this user.
   if (user_is_logged_in() && ($user->mail == $email)) {
+    $_SESSION['persona_sign_in'] = TRUE;
     drupal_add_http_header('Status', '204 No Content');
   }
   // Does an account with this email already exist.
