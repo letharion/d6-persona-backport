@@ -159,18 +159,22 @@ Drupal.behaviors.persona = {
     });
     // Attach the buttons.
     $('.persona-sign-in').click(function (event) {
+      this.blur();
       request();
+      return false;
     });
     $('.persona-change-email').click(function (event) {
+      this.blur();
       // Override sign in callback path to change email.
       signInPath = 'user/persona/change-email';
       request();
+      return false;
     });
     // Only attach to sign out buttons if we are signed in with Persona.
     if (settings.persona.email) {
       $('.persona-sign-out').click(function (event) {
+        this.blur();
         navigator.id.logout();
-        // Prevent the browser from following a link.
         return false;
       });
     }

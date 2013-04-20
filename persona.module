@@ -468,43 +468,36 @@ function theme_persona_button(array $variables) {
   $type = $variables['type'];
   if (!$type) {
     // Create "switch account" button instead of "sign in" if already signed in.
-    $type = user_is_logged_in() ? 'switch_account' : 'sign_in';
+    $type = user_is_logged_in() ? 'switch-account' : 'sign-in';
   }
-  // Determine CSS classes and text.
-  $classes = array('persona-' . $type);
+  // Determine text.
   switch ($type) {
-    case 'sign_in':
+    case 'sign-in':
       $text = t("sign in");
-      $classes[] = 'persona-sign-in';
       break;
-    case 'switch_account':
+    case 'switch-account':
       $text = t("switch account");
-      $classes[] = 'persona-sign-in';
       break;
-    case 'change_email':
+    case 'change-email':
       $text = t("change account email");
-      $classes[] = 'persona-change-email';
       break;
-    case 'sign_out':
+    case 'sign-out':
       $text = t("sign out");
-      $classes[] = 'persona-sign-out';
       break;
   }
+  // Determine CSS classes.
+  $classes = array('persona-' . (($type == 'switch-account') ? 'sign-in' : $type));
   $style = variable_get('persona_button_style');
   if ($style != '') {
     $classes[] = 'persona-button';
     $classes[] = $style;
   }
   // Generate HTML.
-  $text = '<span>' . $text . '</span>';
-  $attributes = array('class' => $classes);
-  if ($type == 'sign_out' && !isset($_SESSION['persona_sign_in'])) {
-    $html = l($text, 'user/logout', array('attributes' => $attributes, 'html' => TRUE));
-  }
-  else {
-    $html = '<div ' .  drupal_attributes($attributes) . '>' . $text . '</div>';
-  }
-  return $html;
+  $path = ($type == 'sign-out' && !isset($_SESSION['persona_sign_in'])) ? 'user/logout' : NULL;
+  return l('<span>' . $text . '</span>', $path, array(
+    'attributes' => array('class' => $classes),
+    'html' => TRUE,
+  ));
 }
 
 /**
@@ -552,7 +545,7 @@ function persona_block_view($delta) {
     $buttons[] = array('#theme' => 'persona_button');
   }
   if (user_is_logged_in()) {
-    $buttons[] = array('#theme' => 'persona_button', '#type' => 'sign_out');
+    $buttons[] = array('#theme' => 'persona_button', '#type' => 'sign-out');
   }
   return array('content' => $buttons);
 }
@@ -610,16 +603,15 @@ function persona_user_view($account) {
     return;
   }
   // Add the Change Email button.
-  $account->content['persona'] = array('#theme' => 'persona_button', '#type' => 'change_email');
+  $account->content['persona'] = array('#theme' => 'persona_button', '#type' => 'change-email');
 }
 
 /**
  * Implements hook_preprocess_HOOK().
  */
 function persona_preprocess_link(array &$variables) {
-  if ($variables['path'] != 'user/logout') {
-    return;
+  if ($variables['path'] == 'user/logout') {
+    // Make sure Persona handles all sign out links.
+    $variables['options']['attributes']['class'][] = 'persona-sign-out';
   }
-  // Make sure Persona handles all sign out links.
-  $variables['options']['attributes']['class'][] = 'persona-sign-out';
 }

@@ -59,7 +59,7 @@ function persona_admin_form(array $form, array &$form_state) {
   $form['buttons']['persona_style_preview'] = array(
     '#type' => 'item',
     '#title' => t("Preview"),
-    '#markup' => theme('persona_button', array('type' => 'sign_in')),
+    '#markup' => theme('persona_button', array('type' => 'sign-in')),
   );
   // Legal Document settings.
   $form['legal_docs'] = array(
