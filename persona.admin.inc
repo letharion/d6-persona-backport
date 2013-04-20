@@ -81,7 +81,7 @@ function persona_admin_form(array $form, array &$form_state) {
   );
   // Add JavaScript.
   $form['#attached']['js'][] = drupal_get_path('module', 'persona') . '/persona.admin.js';
-  // Turn it into a settings form.
+  // Turn it into a settings form. The page cache will be cleared automatically.
   $form = system_settings_form($form);
   // Make sure our submit handler is invoked.
   $form['#submit'][] = 'persona_admin_form_submit';
