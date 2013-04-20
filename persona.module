@@ -22,7 +22,7 @@ function persona_xsrf_token() {
 /**
  * Ensures XSRF token is correct.
  */
-function _persona_check_xsrf_token($token) {
+function persona_check_xsrf_token($token) {
   if (!isset($_SESSION['persona_xsrf_token']) || ($_SESSION['persona_xsrf_token'] != $token)) {
     watchdog('persona', "Bad XSRF token.", array(), WATCHDOG_WARNING);
     throw new Exception();
@@ -313,7 +313,7 @@ function persona_sign_in() {
   global $user;
   $request = _persona_request_variables();
   try {
-    _persona_check_xsrf_token($request['token']);
+    persona_check_xsrf_token($request['token']);
     $email = persona_verify($request['assertion']);
   }
   catch (Exception $e) {
@@ -376,7 +376,7 @@ function persona_change_email() {
   global $user;
   $request = _persona_request_variables();
   try {
-    _persona_check_xsrf_token($request['token']);
+    persona_check_xsrf_token($request['token']);
     $email = persona_verify($request['assertion']);
   }
   catch (Exception $e) {
@@ -423,7 +423,7 @@ function persona_sign_out() {
   global $user;
   $request = _persona_request_variables();
   try {
-    _persona_check_xsrf_token($request['token']);
+    persona_check_xsrf_token($request['token']);
   }
   catch (Exception $e) {
     return;
