@@ -466,35 +466,41 @@ function theme_persona_button(array $variables) {
   }
   // Add the CSS.
   drupal_add_css(drupal_get_path('module', 'persona') . '/persona-buttons.css');
-  $type = $variables['type'];
-  if (!$type) {
-    // Create "switch account" button instead of "sign in" if already signed in.
-    $type = user_is_logged_in() ? 'switch-account' : 'sign-in';
-  }
-  // Determine text.
-  switch ($type) {
+  // Determine text, path and classes.
+  $classes = array();
+  switch ($variables['type'] ?: (user_is_logged_in() ? 'switch-account' : 'sign-in')) {
     case 'sign-in':
       $text = t("sign in");
+      $path = 'user/persona/sign-in';
+      $classes[] = 'persona-sign-in';
       break;
     case 'switch-account':
       $text = t("switch account");
+      $path = 'user/persona/sign-in';
+      $classes[] = 'persona-sign-in';
       break;
     case 'change-email':
       $text = t("change account email");
+      $path = 'user/persona/change-email';
+      $classes[] = 'persona-sign-in';
       break;
     case 'sign-out':
       $text = t("sign out");
+      if (isset($_SESSION['persona_sign_in'])) {
+        $path = 'user/persona/sign-out';
+        $classes[] = 'persona-sign-out';
+      }
+      else {
+        $path = 'user/logout';
+      }
       break;
   }
-  // Determine CSS classes.
-  $classes = array('persona-' . (($type == 'switch-account') ? 'sign-in' : $type));
   $style = variable_get('persona_button_style');
   if ($style != '') {
     $classes[] = 'persona-button';
     $classes[] = $style;
   }
   // Generate HTML.
-  $path = ($type == 'sign-out' && !isset($_SESSION['persona_sign_in'])) ? 'user/logout' : NULL;
   return l('<span>' . $text . '</span>', $path, array(
     'attributes' => array('class' => $classes),
     'html' => TRUE,
@@ -611,8 +617,9 @@ function persona_user_view($account) {
  * Implements hook_preprocess_HOOK().
  */
 function persona_preprocess_link(array &$variables) {
-  if ($variables['path'] == 'user/logout') {
+  if ($variables['path'] == 'user/logout' && isset($_SESSION['persona_sign_in'])) {
     // Make sure Persona handles all sign out links.
+    $variables['path'] = 'user/persona/sign-out';
     $variables['options']['attributes']['class'][] = 'persona-sign-out';
   }
 }

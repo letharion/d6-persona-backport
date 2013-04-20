@@ -16,7 +16,7 @@ Drupal.behaviors.persona = {
 
     var requester = false;
     var tabHasFocus = false;
-    var signInPath = 'user/persona/sign-in';
+    var href;
 
     /**
      * Generates a relative URL for the given Drupal path. Optionally adds
@@ -58,22 +58,6 @@ Drupal.behaviors.persona = {
       }
     }
 
-    /**
-     * Requests a signed identity assertion from the browser.
-     */
-    function request() {
-      requester = true;
-      // Request Persona sign in.
-      navigator.id.request({
-        siteName: settings.persona.siteName,
-        siteLogo: settings.persona.siteLogo,
-        termsOfService: settings.persona.termsOfService,
-        privacyPolicy: settings.persona.privacyPolicy
-      });
-      // Get the token asynchronously if necessary.
-      getToken();
-    }
-
     // Determine when the current tab has the focus.
     $(window).focus(function () {
       tabHasFocus = true;
@@ -102,7 +86,7 @@ Drupal.behaviors.persona = {
           $.ajax({
             type: 'POST',
             contentType: 'application/json',
-            url: relativeUrl(signInPath),
+            url: href,
             data: JSON.stringify({
               token: settings.persona.token,
               assertion: assertion
@@ -136,7 +120,7 @@ Drupal.behaviors.persona = {
           $.ajax({
             type: 'POST',
             contentType: 'application/json',
-            url: relativeUrl('user/persona/sign-out'),
+            url: href,
             data: JSON.stringify({
               token: settings.persona.token
             }),
@@ -159,25 +143,26 @@ Drupal.behaviors.persona = {
     });
     // Attach the buttons.
     $('.persona-sign-in').click(function (event) {
-      this.blur();
-      request();
-      return false;
-    });
-    $('.persona-change-email').click(function (event) {
-      this.blur();
-      // Override sign in callback path to change email.
-      signInPath = 'user/persona/change-email';
-      request();
-      return false;
-    });
-    // Only attach to sign out buttons if we are signed in with Persona.
-    if (settings.persona.email) {
-      $('.persona-sign-out').click(function (event) {
-        this.blur();
-        navigator.id.logout();
-        return false;
+      $(this).blur();
+      href = $(this).attr('href');
+      requester = true;
+      // Request Persona sign in.
+      navigator.id.request({
+        siteName: settings.persona.siteName,
+        siteLogo: settings.persona.siteLogo,
+        termsOfService: settings.persona.termsOfService,
+        privacyPolicy: settings.persona.privacyPolicy
       });
-    }
+      // Get the token asynchronously if necessary.
+      getToken();
+      return false;
+    });
+    $('.persona-sign-out').click(function (event) {
+      $(this).blur();
+      href = $(this).attr('href');
+      navigator.id.logout();
+      return false;
+    });
   }
 };
 
