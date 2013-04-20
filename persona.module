@@ -20,6 +20,33 @@ function persona_xsrf_token() {
 }
 
 /**
+ * Adds the login.persona.org JavaScript shiv.
+ *
+ * @param bool $every_page
+ *   TRUE if the shiv is to be present on every page for users for whom it is
+ *   present at all. Defaults to TRUE.
+ */
+function persona_add_js_shiv($every_page = TRUE) {
+  // Have we already added the shiv?
+  $javascript = drupal_static('drupal_add_js', array());
+  if (isset($javascript['https://login.persona.org/include.js'])) {
+    return;
+  }
+  // Add the Persona JavaScript library. The documentation recommends putting
+  // this at the bottom of the page body, but this causes a significant delay
+  // before Drupal behaviours are activated causing visible page rearrangement.
+  // @see https://developer.mozilla.org/en-US/docs/Persona/Quick_Setup
+  // TODO: Conditionally include this file only for browsers that don't
+  // implement navigator.id natively (currently all of them).
+  // @see https://developer.mozilla.org/en-US/docs/DOM/navigator.id
+  // @see http://drupal.org/node/865536
+  drupal_add_js('https://login.persona.org/include.js', array(
+    'group' => JS_LIBRARY,
+    'every_page' => $every_page,
+  ));
+}
+
+/**
  * Implements hook_init().
  */
 function persona_init() {
@@ -66,18 +93,10 @@ function persona_init() {
     $settings['siteLogo'] = theme_get_setting('logo');
   }
   drupal_add_js(array('persona' => $settings), 'setting');
-  // Add the Persona JavaScript library. The documentation recommends putting
-  // this at the bottom of the page body, but this causes a significant delay
-  // before Drupal behaviours are activated causing visible page rearrangement.
-  // @see https://developer.mozilla.org/en-US/docs/Persona/Quick_Setup
-  // TODO: Conditionally include this file only for browsers that don't
-  // implement navigator.id natively (currently all of them).
-  // @see https://developer.mozilla.org/en-US/docs/DOM/navigator.id
-  // @see http://drupal.org/node/865536
-  drupal_add_js('https://login.persona.org/include.js', array(
-    'group' => JS_LIBRARY,
-    'every_page' => TRUE,
-  ));
+  // Add the JavaScript shiv.
+  if (!variable_get('persona_improve_frontend') || user_is_logged_in()) {
+    persona_add_js_shiv();
+  }
 }
 
 /**
@@ -445,6 +464,10 @@ function persona_theme() {
  *   HTML of generated button.
  */
 function theme_persona_button(array $variables) {
+  // Add the JavaScript shiv.
+  if (variable_get('persona_improve_frontend') && !user_is_logged_in()) {
+    persona_add_js_shiv(FALSE);
+  }
   drupal_add_css(drupal_get_path('module', 'persona') . '/persona-buttons.css');
   $type = $variables['type'];
   // Create "switch account" button instead of "sign in" if already signed in.

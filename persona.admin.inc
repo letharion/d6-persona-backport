@@ -34,6 +34,12 @@ function persona_admin_form(array $form, array &$form_state) {
     '#default_value' => variable_get('persona_new_account_edit'),
     '#description' => t("When the form is submitted the user will be redirected back to the page where they signed in."),
   );
+  $form['general']['persona_improve_frontend'] = array(
+    '#type' => 'checkbox',
+    '#title' => t("Improve frontend performance when not signed in"),
+    '#default_value' => variable_get('persona_improve_frontend'),
+    '#description' => t("For anonymous users, the login.persona.org JavaScript shiv will not be added to pages where there is no sign in button.<br />This means that for browsers that don't support Persona natively, automatic sign in cannot occur on these pages."),
+  );
   // Button settings.
   $form['buttons'] = array(
     '#type' => 'fieldset',
