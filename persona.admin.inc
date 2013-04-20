@@ -26,7 +26,7 @@ function persona_admin_form(array $form, array &$form_state) {
     '#type' => 'checkbox',
     '#title' => t("Use email addresses as usernames"),
     '#default_value' => variable_get('persona_email_usernames'),
-    '#description' => t("When Persona is used to register a new account, the username will be set to the email address used.<br />If this option is not enabled, the username part of the email address will be used.<br />When using this option with Persona as the only sign in method, it is useful to disable permission \"change own username\"."),
+    '#description' => t("When Persona is used to register a new account or change an existing account's email, the username will be set to the email address used.<br />If this option is not enabled, the username part of the email address will be used when registering.<br />When using this option with Persona as the only sign in method, it is useful to disable permission \"change own username\"."),
   );
   $form['general']['persona_new_account_edit'] = array(
     '#type' => 'checkbox',
@@ -38,7 +38,7 @@ function persona_admin_form(array $form, array &$form_state) {
     '#type' => 'checkbox',
     '#title' => t("Improve frontend performance when not signed in"),
     '#default_value' => variable_get('persona_improve_frontend'),
-    '#description' => t("For anonymous users, the login.persona.org JavaScript shiv will not be added to pages where there is no sign in button.<br />This means that for browsers that don't support Persona natively, automatic sign in cannot occur on these pages."),
+    '#description' => t("For anonymous users, the login.persona.org JavaScript shiv will not be added to pages where there is no sign in button.<br />This means that for browsers that don't support navigator.id natively, automatic sign in cannot occur on these pages."),
   );
   // Button settings.
   $form['buttons'] = array(
