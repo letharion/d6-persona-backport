@@ -12,25 +12,22 @@ function persona_requirements($phase) {
   if ($phase != 'runtime') {
     return;
   }
-  $requirement = array('title' => t("Persona audience (\$base_url)"));
-  // Re-include settings.php, but without $base_url being globalized.
-  // @see drupal_settings_initialize()
-  if (file_exists(DRUPAL_ROOT . '/' . conf_path() . '/settings.php')) {
-    include DRUPAL_ROOT . '/' . conf_path() . '/settings.php';
-  }
-  // Is $base_url hardcoded in settings.php?
-  if (isset($base_url)) {
+  $requirement = array(
+    'title' => t("Persona audience"),
+    'value' => _persona_audience(),
+  );
+  // Is $conf['persona_audience'] defined in settings.php?
+  if (variable_get('persona_audience')) {
     $requirement += array(
-      'value' => t("Hardcoded in settings.php"),
       'severity' => REQUIREMENT_OK,
     );
   }
   else {
+    $requirement['value'] .=  ' ' . t("(determined insecurely)");
     $security_url = 'https://developer.mozilla.org/en-US/docs/Persona/Security_Considerations';
     $requirement += array(
-      'value' => t("Determined from HTTP Host header"),
       'severity' => REQUIREMENT_ERROR,
-      'description' => t("\$base_url must be hardcoded in settings.php for security reasons.<br />See !link",
+      'description' => t("\$conf['persona_audience'] must be defined in settings.php.<br />See !link.",
         array('!link' => l($security_url, $security_url, array('attributes' => array('target' => '_blank'))))),
     );
   }

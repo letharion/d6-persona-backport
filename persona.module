@@ -23,7 +23,7 @@ function persona_xsrf_token() {
  * Implements hook_init().
  */
 function persona_init() {
-  global $user;
+  global $user, $is_https;
   // Send X-UA-Compatible HTTP header to force IE to use the most recent
   // rendering engine or use Chrome's frame rendering engine if available. It is
   // not possible to use drupal_add_http_header() as Drupal 7 does not store
@@ -62,7 +62,7 @@ function persona_init() {
   }
   // Site logo can only be displayed on Mozilla Persona dialog if it can be
   // served over HTTPS.
-  if (!empty($_SERVER['HTTPS']) && theme_get_setting('logo') != '') {
+  if ($is_https && (theme_get_setting('logo') != '')) {
     $settings['siteLogo'] = theme_get_setting('logo');
   }
   drupal_add_js(array('persona' => $settings), 'setting');
@@ -194,6 +194,24 @@ function _persona_check_xsrf_token($token) {
 }
 
 /**
+ * Returns the audience URL that assertions should be verified with.
+ *
+ * @return string
+ *   Audience URL.
+ */
+function _persona_audience() {
+  global $is_https;
+  $audience = variable_get('persona_audience');
+  // Determine audience insecurely if not defined.
+  if (!$audience) {
+    $audience = 'http' . ($is_https ? 's'  : '') . '://';
+    $audience .= $_SERVER['HTTP_HOST'];
+    $audience .= ':' . $_SERVER['SERVER_PORT'];
+  }
+  return $audience;
+}
+
+/**
  * Verifies a Persona assertion and determines the email address.
  *
  * @return string
@@ -216,7 +234,7 @@ function persona_verify($assertion) {
     'headers' => array('Content-Type' => 'application/json'),
     'data' => drupal_json_encode(array(
       'assertion' => $assertion,
-      'audience' => $base_url,
+      'audience' => _persona_audience(),
     )),
     'context' => stream_context_create($context_options),
   ));
