@@ -316,7 +316,7 @@ function persona_sign_in() {
     persona_check_xsrf_token($request['token']);
     $email = persona_verify($request['assertion']);
   }
-  catch (Exception $e) {
+  catch (Exception $exception) {
     drupal_add_http_header('Status', '401 Unauthorized');
     drupal_set_message(t("Sorry, there was a problem signing you in with Persona."), 'error');
     return;
@@ -379,7 +379,7 @@ function persona_change_email() {
     persona_check_xsrf_token($request['token']);
     $email = persona_verify($request['assertion']);
   }
-  catch (Exception $e) {
+  catch (Exception $exception) {
     drupal_add_http_header('Status', '401 Unauthorized');
     drupal_set_message(t("Sorry, there was a problem changing your email address with Persona."), 'error');
     return;
@@ -425,7 +425,7 @@ function persona_sign_out() {
   try {
     persona_check_xsrf_token($request['token']);
   }
-  catch (Exception $e) {
+  catch (Exception $exception) {
     return;
   }
   if (user_is_logged_in()) {
