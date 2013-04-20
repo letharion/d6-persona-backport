@@ -614,29 +614,12 @@ function persona_user_view($account) {
 }
 
 /**
- * Implements hook_menu_link_alter().
+ * Implements hook_preprocess_HOOK().
  */
-function persona_menu_link_alter(array &$item) {
-  // Add persona-sign-out class to logout menu item.
-  if ($item['link_path'] == 'user/logout') {
-    $item['options']['attributes']['class'][] = 'persona-sign-out';
+function persona_preprocess_link(array &$variables) {
+  if ($variables['path'] != 'user/logout') {
+    return;
   }
-}
-
-/**
- * Implements hook_page_alter().
- */
-function persona_page_alter(array &$page) {
-  // Add a pre-render function to the toolbar.
-  if (isset($page['page_top']['toolbar'])) {
-    $page['page_top']['toolbar']['#pre_render'][] = 'persona_toolbar_pre_render';
-  }
-}
-
-/**
- * Adds persona-sign-out class to toolbar logout link.
- */
-function persona_toolbar_pre_render(array $toolbar) {
-  $toolbar['toolbar_user']['#links']['logout']['attributes']['class'][] = 'persona-sign-out';
-  return $toolbar;
+  // Make sure Persona handles all sign out links.
+  $variables['options']['attributes']['class'][] = 'persona-sign-out';
 }
