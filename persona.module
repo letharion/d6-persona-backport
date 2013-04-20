@@ -464,14 +464,15 @@ function persona_theme() {
  *   HTML of generated button.
  */
 function theme_persona_button(array $variables) {
-  // Add the JavaScript shiv.
+  // Make sure the JavaScript shiv is added.
   if (variable_get('persona_improve_frontend') && !user_is_logged_in()) {
     persona_add_js_shiv(FALSE);
   }
+  // Add the CSS.
   drupal_add_css(drupal_get_path('module', 'persona') . '/persona-buttons.css');
   $type = $variables['type'];
-  // Create "switch account" button instead of "sign in" if already signed in.
   if (!$type) {
+    // Create "switch account" button instead of "sign in" if already signed in.
     $type = user_is_logged_in() ? 'switch_account' : 'sign_in';
   }
   // Determine CSS classes and text.
