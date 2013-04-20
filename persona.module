@@ -27,9 +27,9 @@ function persona_xsrf_token() {
  *   present at all. Defaults to TRUE.
  */
 function persona_add_js_shiv($every_page = TRUE) {
-  // Add the Persona JavaScript library. The documentation recommends putting
-  // this at the bottom of the page body, but this causes a significant delay
-  // before Drupal behaviours are activated causing visible page rearrangement.
+  // The documentation recommends putting this at the bottom of the page body,
+  // but this causes a significant delay before Drupal behaviours are activated
+  // causing visible page rearrangement.
   // @see https://developer.mozilla.org/en-US/docs/Persona/Quick_Setup
   // TODO: Conditionally include this file only for browsers that don't
   // implement navigator.id natively (currently all of them).
