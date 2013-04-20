@@ -27,11 +27,6 @@ function persona_xsrf_token() {
  *   present at all. Defaults to TRUE.
  */
 function persona_add_js_shiv($every_page = TRUE) {
-  // Have we already added the shiv?
-  $javascript = drupal_static('drupal_add_js', array());
-  if (isset($javascript['https://login.persona.org/include.js'])) {
-    return;
-  }
   // Add the Persona JavaScript library. The documentation recommends putting
   // this at the bottom of the page body, but this causes a significant delay
   // before Drupal behaviours are activated causing visible page rearrangement.
