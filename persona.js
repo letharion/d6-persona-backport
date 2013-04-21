@@ -42,9 +42,8 @@ Drupal.behaviors.persona = {
     /**
      * Gets the XSRF token if it isn't defined.
      */
-    function getToken(async = true) {
+    function getToken(async) {
       if (!settings.persona.token) {
-        // Get the XSRF token asynchronously.
         $.ajax({
           type: 'GET',
           async: async,
@@ -154,7 +153,7 @@ Drupal.behaviors.persona = {
         privacyPolicy: settings.persona.privacyPolicy
       });
       // Get the token asynchronously if necessary.
-      getToken();
+      getToken(true);
       return false;
     });
     $('.persona-sign-out').click(function (event) {
