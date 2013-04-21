@@ -92,10 +92,6 @@ Drupal.behaviors.persona = {
               assertion: assertion
             }),
             dataType: 'json',
-            error: function (jqXHR, textStatus, errorThrown) {
-              // Tell Persona that it didn't work out.
-              navigator.id.logout();
-            },
             success: function (data, textStatus, jqXHR) {
               // Redirect if path provided, otherwise just reload the page.
               if (data) {
@@ -104,6 +100,10 @@ Drupal.behaviors.persona = {
               else {
                 window.location.reload();
               }
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+              // Tell Persona that it didn't work out.
+              navigator.id.logout();
             }
           });
         }
