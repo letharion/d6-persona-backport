@@ -76,7 +76,6 @@ Drupal.behaviors.persona = {
     // Determine when the current tab has the focus.
     $(window).focus(function () {
       tabHasFocus = true;
-      changeEmail = false;
     });
     $(window).blur(function () {
       tabHasFocus = false;
@@ -160,6 +159,7 @@ Drupal.behaviors.persona = {
     // Attach the buttons.
     $('.persona-sign-in').click(function (event) {
       $(this).blur();
+      changeEmail = false;
       request();
       return false;
     });
