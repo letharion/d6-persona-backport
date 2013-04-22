@@ -16,7 +16,7 @@ Drupal.behaviors.persona = {
 
     var requester = false;
     var tabHasFocus = false;
-    var href;
+    var changeEmail = false;
 
     /**
      * Generates a relative URL for the given Drupal path. Optionally adds
@@ -57,9 +57,26 @@ Drupal.behaviors.persona = {
       }
     }
 
+    /**
+     * Requests a signed identity assertion from the browser.
+     */
+    function request() {
+      requester = true;
+      // Request Persona sign in.
+      navigator.id.request({
+        siteName: settings.persona.siteName,
+        siteLogo: settings.persona.siteLogo,
+        termsOfService: settings.persona.termsOfService,
+        privacyPolicy: settings.persona.privacyPolicy
+      });
+      // Get the token asynchronously if necessary.
+      getToken(true);
+    }
+
     // Determine when the current tab has the focus.
     $(window).focus(function () {
       tabHasFocus = true;
+      changeEmail = false;
     });
     $(window).blur(function () {
       tabHasFocus = false;
@@ -85,7 +102,7 @@ Drupal.behaviors.persona = {
           $.ajax({
             type: 'POST',
             contentType: 'application/json',
-            url: href,
+            url: relativeUrl(changeEmail ? 'user/persona/change-email' : 'user/persona/sign-in'),
             data: JSON.stringify({
               token: settings.persona.token,
               assertion: assertion
@@ -119,7 +136,7 @@ Drupal.behaviors.persona = {
           $.ajax({
             type: 'POST',
             contentType: 'application/json',
-            url: href,
+            url: relativeUrl('user/persona/sign-out'),
             data: JSON.stringify({
               token: settings.persona.token
             }),
@@ -143,22 +160,17 @@ Drupal.behaviors.persona = {
     // Attach the buttons.
     $('.persona-sign-in').click(function (event) {
       $(this).blur();
-      href = $(this).attr('href');
-      requester = true;
-      // Request Persona sign in.
-      navigator.id.request({
-        siteName: settings.persona.siteName,
-        siteLogo: settings.persona.siteLogo,
-        termsOfService: settings.persona.termsOfService,
-        privacyPolicy: settings.persona.privacyPolicy
-      });
-      // Get the token asynchronously if necessary.
-      getToken(true);
+      request();
+      return false;
+    });
+    $('.persona-change-email').click(function (event) {
+      $(this).blur();
+      changeEmail = true;
+      request();
       return false;
     });
     $('.persona-sign-out').click(function (event) {
       $(this).blur();
-      href = $(this).attr('href');
       navigator.id.logout();
       return false;
     });

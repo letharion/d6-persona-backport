@@ -467,27 +467,24 @@ function theme_persona_button(array $variables) {
   // Add the CSS.
   drupal_add_css(drupal_get_path('module', 'persona') . '/persona-buttons.css');
   // Determine text, path and classes.
+  $path = 'user/persona';
   $classes = array();
   switch ($variables['type'] ?: (user_is_logged_in() ? 'switch-account' : 'sign-in')) {
     case 'sign-in':
       $text = t("sign in");
-      $path = 'user/persona/sign-in';
       $classes[] = 'persona-sign-in';
       break;
     case 'switch-account':
       $text = t("switch account");
-      $path = 'user/persona/sign-in';
       $classes[] = 'persona-sign-in';
       break;
     case 'change-email':
       $text = t("change account email");
-      $path = 'user/persona/change-email';
-      $classes[] = 'persona-sign-in';
+      $classes[] = 'persona-change-email';
       break;
     case 'sign-out':
       $text = t("sign out");
       if (isset($_SESSION['persona_sign_in'])) {
-        $path = 'user/persona/sign-out';
         $classes[] = 'persona-sign-out';
       }
       else {
@@ -619,7 +616,7 @@ function persona_user_view($account) {
 function persona_preprocess_link(array &$variables) {
   if ($variables['path'] == 'user/logout' && isset($_SESSION['persona_sign_in'])) {
     // Make sure Persona handles all sign out links.
-    $variables['path'] = 'user/persona/sign-out';
+    $variables['path'] = 'user/persona';
     $variables['options']['attributes']['class'][] = 'persona-sign-out';
   }
 }
