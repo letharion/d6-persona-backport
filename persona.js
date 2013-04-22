@@ -157,15 +157,9 @@ Drupal.behaviors.persona = {
       }
     });
     // Attach the buttons.
-    $('.persona-sign-in').click(function (event) {
+    $('.persona-sign-in, .persona-change-email').click(function (event) {
       $(this).blur();
-      changeEmail = false;
-      request();
-      return false;
-    });
-    $('.persona-change-email').click(function (event) {
-      $(this).blur();
-      changeEmail = true;
+      changeEmail = $(this).hasClass('persona-change-email');
       request();
       return false;
     });
