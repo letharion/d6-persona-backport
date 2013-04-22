@@ -466,26 +466,26 @@ function theme_persona_button(array $variables) {
   }
   // Add the CSS.
   drupal_add_css(drupal_get_path('module', 'persona') . '/persona-buttons.css');
-  // Determine text, path and classes.
+  // Determine text, classes and path.
+  $class = array();
   $path = 'user/persona';
-  $classes = array();
   switch ($variables['type'] ?: (user_is_logged_in() ? 'switch-account' : 'sign-in')) {
     case 'sign-in':
       $text = t("sign in");
-      $classes[] = 'persona-sign-in';
+      $class[] = 'persona-sign-in';
       break;
     case 'switch-account':
       $text = t("switch account");
-      $classes[] = 'persona-sign-in';
+      $class[] = 'persona-sign-in';
       break;
     case 'change-email':
       $text = t("change account email");
-      $classes[] = 'persona-change-email';
+      $class[] = 'persona-change-email';
       break;
     case 'sign-out':
       $text = t("sign out");
       if (isset($_SESSION['persona_sign_in'])) {
-        $classes[] = 'persona-sign-out';
+        $class[] = 'persona-sign-out';
       }
       else {
         $path = 'user/logout';
@@ -494,12 +494,12 @@ function theme_persona_button(array $variables) {
   }
   $style = variable_get('persona_button_style');
   if ($style != '') {
-    $classes[] = 'persona-button';
-    $classes[] = $style;
+    $class[] = 'persona-button';
+    $class[] = $style;
   }
   // Generate HTML.
   return l('<span>' . $text . '</span>', $path, array(
-    'attributes' => array('class' => $classes),
+    'attributes' => array('class' => $class),
     'html' => TRUE,
   ));
 }
