@@ -58,6 +58,15 @@ Drupal.behaviors.persona = {
     }
 
     /**
+     * Reloads the page.
+     */
+    function reload() {
+      // This technique will not resend a POST, will not bypass the cache, and
+      // will remove any anchors that would prevent the page from reloading.
+      window.location = relativeUrl(settings.persona.currentPath);
+    }
+
+    /**
      * Requests a signed identity assertion from the browser.
      */
     function request() {
@@ -113,7 +122,7 @@ Drupal.behaviors.persona = {
                 window.location = relativeUrl(data, settings.persona.currentPath);
               }
               else {
-                window.location.reload();
+                reload();
               }
             },
             error: function (jqXHR, textStatus, errorThrown) {
@@ -124,7 +133,7 @@ Drupal.behaviors.persona = {
         }
         else {
           window.setTimeout(function () {
-            window.location.reload()
+            reload()
           }, 4000);
         }
       },
@@ -146,13 +155,13 @@ Drupal.behaviors.persona = {
                 window.location = settings.basePath;
               }
               else {
-                window.location.reload();
+                reload();
               }
             }
           });
         }
         else {
-          window.location.reload();
+          reload();
         }
       }
     });
