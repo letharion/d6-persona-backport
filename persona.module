@@ -635,5 +635,6 @@ function persona_preprocess_link(array &$variables) {
  * Implements hook_user_logout().
  */
 function persona_user_logout() {
+  // Add compatibility with user switching.
   unset($_SESSION['persona_sign_in']);
 }
