@@ -132,9 +132,7 @@ Drupal.behaviors.persona = {
           });
         }
         else {
-          window.setTimeout(function () {
-            reload()
-          }, 4000);
+          window.setTimeout(reload, 4000);
         }
       },
       onlogout: function () {
@@ -166,9 +164,7 @@ Drupal.behaviors.persona = {
           }
         }
         else {
-          window.setTimeout(function () {
-            reload()
-          }, 1000);
+          window.setTimeout(reload, 1000);
         }
       }
     });
