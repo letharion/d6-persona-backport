@@ -138,30 +138,37 @@ Drupal.behaviors.persona = {
         }
       },
       onlogout: function () {
-        // Only sign out from the website if it is already signed in. This
-        // prevents unnecessary sign out requests when verification fails.
-        if (settings.persona.email) {
-          $.ajax({
-            type: 'POST',
-            contentType: 'application/json',
-            url: relativeUrl('user/persona/sign-out'),
-            data: JSON.stringify({
-              token: settings.persona.token
-            }),
-            dataType: 'json',
-            complete: function (jqXHR, textStatus) {
-              if (tabHasFocus) {
-                // Redirect the current tab to the homepage.
-                window.location = settings.basePath;
+        if (requester || tabHasFocus) {
+          // Only sign out from the website if it is already signed in. This
+          // prevents unnecessary sign out requests when verification fails.
+          if (settings.persona.email) {
+            $.ajax({
+              type: 'POST',
+              contentType: 'application/json',
+              url: relativeUrl('user/persona/sign-out'),
+              data: JSON.stringify({
+                token: settings.persona.token
+              }),
+              dataType: 'json',
+              complete: function (jqXHR, textStatus) {
+                if (tabHasFocus) {
+                  // Redirect the current tab to the homepage.
+                  window.location = settings.basePath;
+                }
+                else {
+                  reload();
+                }
               }
-              else {
-                reload();
-              }
-            }
-          });
+            });
+          }
+          else {
+            reload();
+          }
         }
         else {
-          reload();
+          window.setTimeout(function () {
+            reload()
+          }, 1000);
         }
       }
     });
@@ -174,12 +181,14 @@ Drupal.behaviors.persona = {
     });
     $('.persona-sign-out').click(function (event) {
       $(this).blur();
+      requester = true;
       navigator.id.logout();
       return false;
     });
     // Add compatibility with user switching.
     $('.persona-forget').click(function (event) {
       settings.persona.email = null;
+      requester = true;
       navigator.id.logout();
     });
   }
