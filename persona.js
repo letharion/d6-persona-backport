@@ -177,6 +177,11 @@ Drupal.behaviors.persona = {
       navigator.id.logout();
       return false;
     });
+    // Add compatibility with user switching.
+    $('.persona-forget').click(function (event) {
+      settings.persona.email = null;
+      navigator.id.logout();
+    });
   }
 };
 
