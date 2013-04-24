@@ -219,7 +219,7 @@ function _persona_audience() {
   if (!$audience) {
     $audience = 'http' . ($is_https ? 's'  : '') . '://';
     $audience .= $_SERVER['HTTP_HOST'];
-    $audience .= ':' . $_SERVER['SERVER_PORT'];
+    $audience .= ':' . ($is_https ? '443'  : '80');
   }
   return $audience;
 }
