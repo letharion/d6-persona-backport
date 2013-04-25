@@ -149,13 +149,8 @@ Drupal.behaviors.persona = {
               }),
               dataType: 'json',
               complete: function (jqXHR, textStatus) {
-                if (tabHasFocus) {
-                  // Redirect the current tab to the homepage.
-                  window.location = settings.basePath;
-                }
-                else {
-                  reload();
-                }
+                // Redirect the current tab to the homepage.
+                window.location = settings.basePath;
               }
             });
           }
