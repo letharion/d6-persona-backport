@@ -467,18 +467,18 @@ function theme_persona_button(array $variables) {
   // Determine text and classes.
   switch ($variables['type'] ?: (user_is_logged_in() ? 'switch-account' : 'sign-in')) {
     case 'sign-in':
-      $text = t("sign in");
+      $text = t("Sign in");
       $variables['type'] = 'sign-in';
       break;
     case 'switch-account':
-      $text = t("switch account");
+      $text = t("Switch account");
       $variables['type'] = 'sign-in';
       break;
     case 'change-email':
-      $text = t("change account email");
+      $text = t("Change account email");
       break;
     case 'sign-out':
-      $text = t("sign out");
+      $text = t("Sign out");
       break;
   }
   $class = array('persona-' . $variables['type']);

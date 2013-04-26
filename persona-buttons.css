@@ -43,6 +43,7 @@
   padding: 0;
   margin-bottom: 10px;
   cursor: pointer;
+  text-transform: lowercase;
 }
 
 .block-persona .persona-button {
