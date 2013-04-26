@@ -66,22 +66,6 @@ Drupal.behaviors.persona = {
       window.location = relativeUrl(settings.persona.currentPath);
     }
 
-    /**
-     * Requests a signed identity assertion from the browser.
-     */
-    function request() {
-      requester = true;
-      // Request Persona sign in.
-      navigator.id.request({
-        siteName: settings.persona.siteName,
-        siteLogo: settings.persona.siteLogo,
-        termsOfService: settings.persona.termsOfService,
-        privacyPolicy: settings.persona.privacyPolicy
-      });
-      // Get the token asynchronously if necessary.
-      getToken(true);
-    }
-
     // Determine when the current tab has the focus.
     $(window).focus(function () {
       tabHasFocus = true;
@@ -167,7 +151,16 @@ Drupal.behaviors.persona = {
     $('.persona-sign-in, .persona-change-email').click(function (event) {
       $(this).blur();
       changeEmail = $(this).hasClass('persona-change-email');
-      request();
+      requester = true;
+      // Request Persona sign in.
+      navigator.id.request({
+        siteName: settings.persona.siteName,
+        siteLogo: settings.persona.siteLogo,
+        termsOfService: settings.persona.termsOfService,
+        privacyPolicy: settings.persona.privacyPolicy
+      });
+      // Get the token asynchronously if necessary.
+      getToken(true);
     });
     $('.persona-sign-out').click(function (event) {
       $(this).blur();
