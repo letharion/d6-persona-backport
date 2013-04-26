@@ -168,12 +168,16 @@ Drupal.behaviors.persona = {
       $(this).blur();
       changeEmail = $(this).hasClass('persona-change-email');
       request();
-      return false;
     });
     $('.persona-sign-out').click(function (event) {
       $(this).blur();
-      requester = true;
-      navigator.id.logout();
+      if (settings.persona.email) {
+        requester = true;
+        navigator.id.logout();
+      }
+      else {
+        window.location = relativeUrl('user/logout');
+      }
       return false;
     });
     // Add compatibility with user switching.
