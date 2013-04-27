@@ -7,14 +7,12 @@
 
 Drupal.behaviors.personaAdmin = {
   attach: function (context, settings) {
-    var $button = $('.persona-sign-in');
+    var $button = $('.persona');
     $('#edit-persona-button-style').change(function (event) {
-      $button.removeClass('dark orange persona-button');
-      var buttonClass = $(this).val();
-      if (buttonClass) {
-        buttonClass += ' persona-button';
+      $button.removeClass('persona-styled');
+      if ($(this).val() == 'persona') {
+        $button.addClass('persona-styled');
       }
-      $button.addClass(buttonClass);
     });
   }
 }

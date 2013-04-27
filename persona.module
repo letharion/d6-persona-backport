@@ -485,10 +485,10 @@ function theme_persona_button(array $variables) {
       $text = t("Sign out");
       break;
   }
-  $class = array(
-    'persona',
-    'persona-' . $variables['type'],
-  );
+  $class = array('persona', 'persona-' . $variables['type']);
+  if (variable_get('persona_button_style') == 'persona') {
+    $class[] = 'persona-styled';
+  }
   // Generate HTML.
   return '<button ' . drupal_attributes(array('class' => $class)) . '>' . $text . '</button>';
 }
