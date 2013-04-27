@@ -50,10 +50,8 @@ function persona_admin_form(array $form, array &$form_state) {
     '#title' => t("Style"),
     '#default_value' => variable_get('persona_button_style'),
     '#options' => array(
-      '' => t("None"),
-      'orange' => t("Orange"),
-      'blue' => t("Blue"),
-      'dark' => t("Dark"),
+      'none' => t("None"),
+      'persona' => t("Persona"),
     ),
   );
   $form['buttons']['persona_style_preview'] = array(

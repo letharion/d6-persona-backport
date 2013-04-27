@@ -3,4 +3,5 @@ description = Enables users to authenticate using Mozilla Persona.
 package = Authentication
 configure = admin/config/people/persona
 core = 7.x
+stylesheets[all][] = css/persona.module.css
 scripts[] = persona.js

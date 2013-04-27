@@ -102,6 +102,12 @@ function persona_init() {
   if (!variable_get('persona_improve_frontend') || user_is_logged_in()) {
     persona_add_js_shiv();
   }
+  // Add the button CSS if necessary.
+  if (variable_get('persona_button_style') == 'persona') {
+    drupal_add_css(drupal_get_path('module', 'persona') . '/css/persona.skin.css', array(
+      'every_page' => TRUE,
+    ));
+  }
 }
 
 /**
@@ -462,8 +468,6 @@ function theme_persona_button(array $variables) {
   if (variable_get('persona_improve_frontend') && !user_is_logged_in()) {
     persona_add_js_shiv(FALSE);
   }
-  // Add the CSS.
-  drupal_add_css(drupal_get_path('module', 'persona') . '/persona-buttons.css');
   // Determine text and classes.
   switch ($variables['type'] ?: (user_is_logged_in() ? 'switch-account' : 'sign-in')) {
     case 'sign-in':
@@ -481,14 +485,12 @@ function theme_persona_button(array $variables) {
       $text = t("Sign out");
       break;
   }
-  $class = array('persona-' . $variables['type']);
-  $style = variable_get('persona_button_style');
-  if ($style) {
-    $class[] = 'persona-button';
-    $class[] = $style;
-  }
+  $class = array(
+    'persona',
+    'persona-' . $variables['type'],
+  );
   // Generate HTML.
-  return '<button ' . drupal_attributes(array('class' => $class)) . '><span>' . $text . '</span></button>';
+  return '<button ' . drupal_attributes(array('class' => $class)) . '>' . $text . '</button>';
 }
 
 /**
