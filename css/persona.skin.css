@@ -7,7 +7,10 @@ button.persona-styled::-moz-focus-inner {
   padding: 0;
   border: 0;
 }
-.persona-styled {
+.persona-styled,
+.persona-styled:hover,
+.persona-styled:active,
+.persona-styled:focus {
   position: relative;
   display: block;
   line-height: 28px;
