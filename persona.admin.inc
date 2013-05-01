@@ -5,6 +5,25 @@
  */
 
 /**
+ * Generates preview button for admin form.
+ */
+function persona_admin_form_button_preview($style = NULL) {
+  return array(
+    '#theme' => 'persona_button',
+    '#type' => 'sign-in',
+    '#style' => $style,
+    '#attributes' => array('id' => 'button-preview'),
+  );
+}
+
+/**
+ * AJAX callback to generate preview button for admin form.
+ */
+function persona_admin_form_button_preview_callback(array $form, array $form_state) {
+  return persona_admin_form_button_preview($form_state['values']['persona_button_style']);
+}
+
+/**
  * Generates admin form.
  */
 function persona_admin_form(array $form, array &$form_state) {
@@ -50,14 +69,21 @@ function persona_admin_form(array $form, array &$form_state) {
     '#title' => t("Style"),
     '#default_value' => variable_get('persona_button_style'),
     '#options' => array(
-      'none' => t("None"),
+      'button' => t("Button"),
       'persona' => t("Persona"),
+      'form' => t("Form"),
+    ),
+    '#ajax' => array(
+      'callback' => 'persona_admin_form_button_preview_callback',
+      'wrapper' => 'button-preview',
+      'effect' => 'fade',
+      'progress' => array('type' => 'none'),
     ),
   );
   $form['buttons']['persona_style_preview'] = array(
     '#type' => 'item',
     '#title' => t("Preview"),
-    '#markup' => theme('persona_button', array('type' => 'sign-in')),
+    'button' => persona_admin_form_button_preview(),
   );
   // Legal Document settings.
   $form['legal_docs'] = array(
@@ -77,9 +103,7 @@ function persona_admin_form(array $form, array &$form_state) {
     '#default_value' => variable_get('persona_privacy_link'),
     '#description' => "Link in the form of a local path or an absolute URL.",
   );
-  // Add CSS and JavaScript.
   $form['#attached']['css'][] = drupal_get_path('module', 'persona') . '/css/persona.skin.css';
-  $form['#attached']['js'][] = drupal_get_path('module', 'persona') . '/persona.admin.js';
   // Turn it into a settings form. The page cache will be cleared automatically.
   $form = system_settings_form($form);
   // Make sure our submit handler is invoked.

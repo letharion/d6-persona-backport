@@ -448,7 +448,11 @@ function persona_sign_out() {
 function persona_theme() {
   return array(
     'persona_button' => array(
-      'variables' => array('type' => NULL),
+      'variables' => array(
+        'type' => NULL,
+        'style' => NULL,
+        'attributes' => array(),
+      ),
     ),
   );
 }
@@ -468,7 +472,7 @@ function theme_persona_button(array $variables) {
   if (variable_get('persona_improve_frontend') && !user_is_logged_in()) {
     persona_add_js_shiv(FALSE);
   }
-  // Determine text and classes.
+  // Generate HTML.
   switch ($variables['type'] ?: (user_is_logged_in() ? 'switch-account' : 'sign-in')) {
     case 'sign-in':
       $text = t("Sign in");
@@ -485,12 +489,20 @@ function theme_persona_button(array $variables) {
       $text = t("Sign out");
       break;
   }
-  $class = array('persona', 'persona-' . $variables['type']);
-  if (variable_get('persona_button_style') == 'persona') {
-    $class[] = 'persona-styled';
+  $attributes = drupal_array_merge_deep($variables['attributes'], array(
+    'type' => 'button',
+    'class' => array('persona', 'persona-' . $variables['type']),
+  ));
+  switch ($variables['style'] ?: variable_get('persona_button_style')) {
+    case 'form':
+      $attributes['class'][] = 'form-submit';
+      $attributes['value'] = $text;
+      return '<input' . drupal_attributes($attributes) . ' />';
+    case 'persona':
+      $attributes['class'][] = 'persona-styled';
+    case 'button':
+      return '<button' . drupal_attributes($attributes) . '>' . $text . '</button>';
   }
-  // Generate HTML.
-  return '<button ' . drupal_attributes(array('class' => $class)) . '>' . $text . '</button>';
 }
 
 /**
