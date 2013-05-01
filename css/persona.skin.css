@@ -31,29 +31,23 @@ button.persona-styled::-moz-focus-inner {
   background-color: #4e4e4e;
   background-image: url('button.png');
   background-image: url('button.png'), -ms-linear-gradient(top, #606060, #3c3c3c);
-  background-image: url('button.png'), -o-linear-gradient(top, #606060, #3c3c3c);
   background-image: url('button.png'), -webkit-linear-gradient(top, #606060, #3c3c3c);
   background-image: url('button.png'), linear-gradient(to bottom, #606060, #3c3c3c);
 
   -ms-border-radius: 5px;
-  -o-border-radius: 5px;
   border-radius: 5px;
 
   -ms-box-shadow: 0 2px rgba(0, 0, 0, 0.2);
-  -o-box-shadow: 0 2px rgba(0, 0, 0, 0.2);
-  -webkit-box-shadow: 0 2px rgba(0, 0, 0, 0.2);
   box-shadow: 0 2px rgba(0, 0, 0, 0.2);
 }
 .persona-styled:hover,
 .persona-styled:focus {
   background-color: #3a3a3a;
   background-image: url('button.png'), -ms-linear-gradient(top, #484848, #2d2d2d);
-  background-image: url('button.png'), -o-linear-gradient(top, #484848, #2d2d2d);
   background-image: url('button.png'), -webkit-linear-gradient(top, #484848, #2d2d2d);
   background-image: url('button.png'), linear-gradient(to bottom, #484848, #2d2d2d);
 
   -ms-box-shadow: 0 0 3px 3px #f07746;
-  -o-box-shadow: 0 0 3px 3px #f07746;
   box-shadow: 0 0 3px 3px #f07746;
 }
 .persona-styled:active {
