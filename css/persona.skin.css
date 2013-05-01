@@ -26,7 +26,7 @@ button.persona-styled::-moz-focus-inner {
   text-align: left;
   text-transform: lowercase;
   cursor: pointer;
-  
+
   background-size: 38px 28px, 100% 100%;
   background-repeat: no-repeat;
   background-color: #4e4e4e;
