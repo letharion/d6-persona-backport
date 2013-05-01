@@ -42,11 +42,11 @@ button.persona-styled::-moz-focus-inner {
   -webkit-border-radius: 5px;
   border-radius: 5px;
 
-  -moz-box-shadow: 0 2px 0 #c5c5c2;
-  -ms-box-shadow: 0 2px 0 #c5c5c2;
-  -o-box-shadow: 0 2px 0 #c5c5c2;
-  -webkit-box-shadow: 0 2px 0 #c5c5c2;
-  box-shadow: 0 2px 0 #c5c5c2;
+  -moz-box-shadow: 0 2px rgba(0, 0, 0, 0.2);
+  -ms-box-shadow: 0 2px rgba(0, 0, 0, 0.2);
+  -o-box-shadow: 0 2px rgba(0, 0, 0, 0.2);
+  -webkit-box-shadow: 0 2px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px rgba(0, 0, 0, 0.2);
 }
 .persona-styled:hover,
 .persona-styled:focus {
