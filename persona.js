@@ -150,7 +150,6 @@ Drupal.behaviors.persona = {
     // Attach the buttons.
     $('.persona-sign-in, .persona-change-email').click(function (event) {
       $(this).blur();
-      event.preventDefault();
       changeEmail = $(this).hasClass('persona-change-email');
       requester = true;
       // Request Persona sign in.
