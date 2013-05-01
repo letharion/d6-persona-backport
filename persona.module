@@ -474,24 +474,30 @@ function theme_persona_button(array $variables) {
   }
   // Generate HTML.
   switch ($variables['type'] ?: (user_is_logged_in() ? 'switch-account' : 'sign-in')) {
+    case 'preview':
+      $text = t("Sign in");
+      $type = 'inert';
+      break;
     case 'sign-in':
       $text = t("Sign in");
-      $variables['type'] = 'sign-in';
+      $type = 'sign-in';
       break;
     case 'switch-account':
       $text = t("Switch account");
-      $variables['type'] = 'sign-in';
+      $type = 'sign-in';
       break;
     case 'change-email':
       $text = t("Change account email");
+      $type = 'change-email';
       break;
     case 'sign-out':
       $text = t("Sign out");
+      $type = 'sign-out';
       break;
   }
   $attributes = drupal_array_merge_deep($variables['attributes'], array(
     'type' => 'button',
-    'class' => array('persona', 'persona-' . $variables['type']),
+    'class' => array('persona', 'persona-' . $type),
   ));
   switch ($variables['style'] ?: variable_get('persona_button_style')) {
     case 'form':

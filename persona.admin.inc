@@ -10,7 +10,7 @@
 function persona_admin_form_button_preview($style = NULL) {
   return array(
     '#theme' => 'persona_button',
-    '#type' => 'sign-in',
+    '#type' => 'preview',
     '#style' => $style,
     '#attributes' => array('id' => 'button-preview'),
   );

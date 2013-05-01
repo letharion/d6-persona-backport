@@ -174,6 +174,9 @@ Drupal.behaviors.persona = {
         window.location = relativeUrl('user/logout');
       }
     });
+    $('.persona-inert').click(function (event) {
+      $(this).blur();
+    });
     // Add compatibility with user switching.
     $('.persona-forget').click(function (event) {
       settings.persona.email = null;
