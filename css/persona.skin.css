@@ -37,7 +37,6 @@ button.persona-styled::-moz-focus-inner {
 
   -ms-border-radius: 5px;
   -o-border-radius: 5px;
-  -webkit-border-radius: 5px;
   border-radius: 5px;
 
   -ms-box-shadow: 0 2px rgba(0, 0, 0, 0.2);
@@ -55,7 +54,6 @@ button.persona-styled::-moz-focus-inner {
 
   -ms-box-shadow: 0 0 3px 3px #f07746;
   -o-box-shadow: 0 0 3px 3px #f07746;
-  -webkit-box-shadow: 0 0 3px 3px #f07746;
   box-shadow: 0 0 3px 3px #f07746;
 }
 .persona-styled:active {
