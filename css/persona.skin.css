@@ -17,6 +17,7 @@ button.persona-styled::-moz-focus-inner {
   padding: 0 10px 0 44px;
   border: 0;
   margin-bottom: 10px;
+  white-space: nowrap;
 
   color: white;
   font-family: Ubuntu, Helvetica, Arial, sans-serif;
