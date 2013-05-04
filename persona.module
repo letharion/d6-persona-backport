@@ -306,7 +306,7 @@ function _persona_existing_account_sign_in($account) {
   }
   else {
     watchdog('persona', "Sign in by %email to blocked account denied.", array('%email' => $account->mail), WATCHDOG_WARNING);
-    drupal_set_message(t("You are not allowed to sign in at this time."), 'error');
+    drupal_set_message(t("The account for %email has not been activated or is blocked.", array('%email' => $account->mail)), 'error');
     drupal_add_http_header('Status', '403 Forbidden');
   }
   return $account->status;
