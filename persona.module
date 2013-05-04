@@ -55,7 +55,7 @@ function persona_add_js_shiv($every_page = TRUE) {
  * Implements hook_init().
  */
 function persona_init() {
-  global $user, $is_https;
+  global $user, $is_https, $base_secure_url;
   // Send X-UA-Compatible HTTP header to force IE to use the most recent
   // rendering engine or use Chrome's frame rendering engine if available. It is
   // not possible to use drupal_add_http_header() as Drupal 7 does not store
@@ -92,10 +92,11 @@ function persona_init() {
       'privacyPolicy' => url(variable_get('persona_privacy_link')),
     );
   }
-  // Site logo can only be displayed on Mozilla Persona dialog if it can be
-  // served over HTTPS.
-  if ($is_https && (theme_get_setting('logo') != '')) {
-    $settings['siteLogo'] = theme_get_setting('logo');
+  // Site logo can only be displayed on the Mozilla Persona dialog if the site
+  // is being accessed over HTTPS. It must be an absolute path rather than a
+  // full URL.
+  if ($is_https && (strpos(($logo_url = theme_get_setting('logo')), $base_secure_url) === 0)) {
+    $settings['siteLogo'] = substr($logo_url, strlen($base_secure_url));
   }
   drupal_add_js(array('persona' => $settings), 'setting');
   // Add the JavaScript shiv.
