@@ -148,8 +148,10 @@ Drupal.behaviors.persona = {
       }
     });
     // Attach the buttons.
-    $('.persona-sign-in, .persona-change-email').click(function (event) {
+    $('.persona-button').click(function (event) {
       $(this).blur();
+    });
+    $('.persona-sign-in, .persona-change-email').click(function (event) {
       changeEmail = $(this).hasClass('persona-change-email');
       requester = true;
       // Request Persona sign in.
@@ -163,7 +165,6 @@ Drupal.behaviors.persona = {
       getToken(true);
     });
     $('.persona-sign-out').click(function (event) {
-      $(this).blur();
       event.preventDefault();
       if (settings.persona.email) {
         requester = true;
@@ -172,9 +173,6 @@ Drupal.behaviors.persona = {
       else {
         window.location = relativeUrl('user/logout');
       }
-    });
-    $('.persona-inert').click(function (event) {
-      $(this).blur();
     });
     // Add compatibility with user switching.
     $('.persona-forget').click(function (event) {
