@@ -86,7 +86,7 @@ function persona_init() {
     $settings['token'] = persona_xsrf_token();
   }
   // Add the legal documents if they are both provided.
-  if ((variable_get('persona_terms_link') != '') && (variable_get('persona_privacy_link') != '')) {
+  if ((variable_get('persona_terms_link')) && (variable_get('persona_privacy_link'))) {
     $settings += array(
       'termsOfService' => url(variable_get('persona_terms_link')),
       'privacyPolicy' => url(variable_get('persona_privacy_link')),
