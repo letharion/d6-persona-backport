@@ -80,3 +80,10 @@ function persona_uninstall() {
   // Block settings.
   variable_del('persona_block_switch_account');
 }
+
+/**
+ * Set button style to "Persona".
+ */
+function persona_update_7100(array &$sandbox) {
+  variable_set('persona_button_style', 'persona');
+}
