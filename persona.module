@@ -238,7 +238,6 @@ function _persona_audience() {
  *   Email address that the user has signed in with.
  */
 function persona_verify($assertion) {
-  global $base_url;
   // Verify assertion with Mozilla's Remote Verification API.
   // TODO: Support local verification once API has stabilized, for example with
   // https://github.com/Falco20019/php-browseridlib
