@@ -78,7 +78,7 @@ function persona_init() {
     // Add some settings that core doesn't provide.
     // @see http://drupal.org/node/1691394
     'cleanUrls' => variable_get('clean_url'),
-    'currentPath' => (current_path() == variable_get('site_frontpage', 'node')) ? '' : current_path(),
+    'currentPath' => (current_path() == variable_get('site_frontpage')) ? '' : current_path(),
   );
   // Don't add the XSRF token if the user is not signed in as the page may be
   // cached. This also avoids creating a session.
