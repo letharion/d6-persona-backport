@@ -491,7 +491,7 @@ function theme_persona_button(array $variables) {
       $attributes['class'][] = 'persona-sign-in';
       break;
     case 'change-email':
-      $text = t("Change account email");
+      $text = t("Change email");
       $attributes['class'][] = 'persona-change-email';
       break;
     case 'sign-out':
@@ -613,12 +613,20 @@ function persona_form_user_login_alter(array &$form, array &$form_state, $form_i
  */
 function persona_user_view($account) {
   global $user;
-  // If a different user is being displayed then do nothing.
-  if ($account->uid != $user->uid) {
-    return;
+  // Add account email information.
+  $account->content['account'] = array(
+    '#type' => 'user_profile_category',
+    '#title' => t("Account"),
+  );
+  $account->content['account']['email'] = array(
+    '#type' => 'user_profile_item',
+    '#title' => t("Email address"),
+    '#markup' => check_plain($account->mail),
+  );
+  // If displaying the signed in user add the Change Email button.
+  if ($account->uid == $user->uid) {
+    $account->content['account']['email']['#suffix'] = theme('persona_button', array('type' => 'change-email'));
   }
-  // Add the Change Email button.
-  $account->content['persona'] = array('#theme' => 'persona_button', '#type' => 'change-email');
 }
 
 /**
