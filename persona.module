@@ -337,13 +337,13 @@ function persona_sign_in() {
     _persona_existing_account_sign_in($account);
   }
   // Are users allows to create new accounts?
-  elseif (variable_get('user_register')) {
+  elseif ($user_register = variable_get('user_register', USER_REGISTER_VISITORS_ADMINISTRATIVE_APPROVAL)) {
     // Create an account for this user.
     $fields = array(
       'name' => _persona_extract_username($email),
       'mail' => $email,
       'access' => REQUEST_TIME,
-      'status' => (variable_get('user_register') == USER_REGISTER_VISITORS),
+      'status' => $user_register == USER_REGISTER_VISITORS,
       'init' => $email,
     );
     $account = user_save(drupal_anonymous_user(), $fields);
