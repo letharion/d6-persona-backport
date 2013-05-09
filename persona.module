@@ -580,9 +580,13 @@ function persona_block_view_alter(&$data, $block) {
  * Implements hook_form_FORM_ID_alter().
  */
 function persona_form_user_profile_form_alter(array &$form, array &$form_state, $form_id) {
-  if (variable_get('persona_takeover')) {
+  // If the user is signed in with Persona then make sure they can't change
+  // their email, or Persona will try to make a new account with the old email.
+  if (isset($_SESSION['persona_sign_in'])) {
     $form['account']['mail']['#type'] = 'value';
     $form['account']['mail']['#value'] = $form['account']['mail']['#default_value'];
+  }
+  if (variable_get('persona_takeover')) {
     $form['account']['pass']['#type'] = 'value';
     $form['account']['current_pass']['#type'] = 'value';
   }
