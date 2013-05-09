@@ -55,7 +55,7 @@ function persona_install() {
     ->fields(array(
       'module' => 'persona',
       'delta' => 'buttons',
-      'theme' => variable_get('theme_default', 'bartik'),
+      'theme' => variable_get('theme_default'),
       'status' => 1,
       'region' => 'sidebar_first',
       'pages' => '',
