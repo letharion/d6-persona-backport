@@ -413,6 +413,8 @@ function persona_change_email() {
     ));
     drupal_set_message(t("Your email address has been changed to %email.", array('%email' => $user->mail)));
     drupal_add_http_header('Status', '204 No Content');
+    // Store in the session that the user is now signed in with Persona.
+    $_SESSION['persona_sign_in'] = TRUE;
   }
 }
 
