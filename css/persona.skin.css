@@ -54,6 +54,3 @@ button.persona-styled::-moz-focus-inner {
 .persona-styled:active {
   top: 1px;
 }
-.block-persona .persona-styled {
-  width: 100%;
-}
