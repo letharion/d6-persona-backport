@@ -50,17 +50,7 @@ function persona_install() {
   variable_set('persona_privacy_link', '');
   // Block settings.
   variable_set('persona_block_switch_account', TRUE);
-  // Add Persona block to default theme.
-  db_insert('block')
-    ->fields(array(
-      'module' => 'persona',
-      'delta' => 'buttons',
-      'theme' => variable_get('theme_default'),
-      'status' => 1,
-      'region' => 'sidebar_first',
-      'pages' => '',
-    ))
-    ->execute();
+  _persona_update_7101_db();
 }
 
 /**
@@ -86,4 +76,32 @@ function persona_uninstall() {
  */
 function persona_update_7100(array &$sandbox) {
   variable_set('persona_button_style', 'persona');
+}
+
+function _persona_update_7101_db() {
+  // Configure block visibility.
+  db_insert('block_role')
+    ->fields(array('module', 'delta', 'rid'))
+    ->values(array('persona', 'sign-in', DRUPAL_ANONYMOUS_RID))
+    ->values(array('persona', 'change-email', DRUPAL_AUTHENTICATED_RID))
+    ->values(array('persona', 'sign-out', DRUPAL_AUTHENTICATED_RID))
+    ->execute();
+  // Add Persona Sign In block to header region in default theme.
+  db_insert('block')
+    ->fields(array(
+      'module' => 'persona',
+      'delta' => 'sign-in',
+      'theme' => variable_get('theme_default'),
+      'status' => 1,
+      'region' => 'header',
+      'pages' => '',
+    ))
+    ->execute();
+}
+
+/**
+ * Configure blocks.
+ */
+function persona_update_7101(array &$sandbox) {
+  _persona_update_7101_db();
 }

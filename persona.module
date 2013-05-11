@@ -474,31 +474,25 @@ function theme_persona_button(array $variables) {
     persona_add_js_shiv(FALSE);
   }
   // Generate HTML.
-  $attributes = drupal_array_merge_deep($variables['attributes'], array(
-    'type' => 'button',
-    'class' => array('persona-button'),
-  ));
-  switch ($variables['type'] ?: (user_is_logged_in() ? 'switch-account' : 'sign-in')) {
+  $variables['type'] = $variables['type'] ?: (user_is_logged_in() ? 'sign-out' : 'sign-in');
+  switch ($variables['type']) {
     case 'preview':
       $text = t("Sign in");
       break;
     case 'sign-in':
-      $text = t("Sign in");
-      $attributes['class'][] = 'persona-sign-in';
-      break;
-    case 'switch-account':
-      $text = t("Switch account");
-      $attributes['class'][] = 'persona-sign-in';
+      $text = user_is_logged_in() ? t("Switch account") : t("Sign in");
       break;
     case 'change-email':
       $text = t("Change email");
-      $attributes['class'][] = 'persona-change-email';
       break;
     case 'sign-out':
       $text = t("Sign out");
-      $attributes['class'][] = 'persona-sign-out';
       break;
   }
+  $attributes = drupal_array_merge_deep($variables['attributes'], array(
+    'type' => 'button',
+    'class' => array('persona-button', 'persona-' . $variables['type']),
+  ));
   switch ($variables['style'] ?: variable_get('persona_button_style')) {
     case 'form':
       $attributes['class'][] = 'form-submit';
@@ -516,49 +510,18 @@ function theme_persona_button(array $variables) {
  */
 function persona_block_info() {
   $blocks = array(
-    'buttons' => array(
-      'info' => t("Persona buttons"),
-    ),
+    'sign-in' => array('info' => t("Persona Sign In button")),
+    'change-email' => array('info' => t("Persona Change Email button")),
+    'sign-out' => array('info' => t("Persona Sign Out button")),
   );
   return $blocks;
-}
-
-/**
- * Implements hook_block_configure().
- */
-function persona_block_configure($delta = '') {
-  $form['switch_account'] = array(
-    '#type' => 'checkbox',
-    '#title' => t("Display \"switch account\" button when signed in."),
-    '#default_value' => variable_get('persona_block_switch_account'),
-  );
-  return $form;
-}
-
-/**
- * Implements hook_block_save().
- */
-function persona_block_save($delta = '', array $edit = array()) {
-  variable_set('persona_block_switch_account', $edit['switch_account']);
 }
 
 /**
  * Implements hook_block_view().
  */
 function persona_block_view($delta) {
-  // If we are on the standard sign in page, don't display this block.
-  if (!user_is_logged_in() && arg(0) == 'user' && !is_numeric(arg(1))) {
-    return array();
-  }
-  // Create the buttons.
-  $buttons = array();
-  if (!user_is_logged_in() || variable_get('persona_block_switch_account')) {
-    $buttons[] = array('#theme' => 'persona_button');
-  }
-  if (user_is_logged_in()) {
-    $buttons[] = array('#theme' => 'persona_button', '#type' => 'sign-out');
-  }
-  return array('content' => $buttons);
+  return array('content' => array('#theme' => 'persona_button', '#type' => $delta));
 }
 
 /**
