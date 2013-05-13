@@ -12,26 +12,26 @@ function persona_requirements($phase) {
   if ($phase != 'runtime') {
     return;
   }
-  $requirement = array(
+  $requirements = array();
+  $requirements['persona_audience'] = array(
     'title' => t("Persona audience"),
     'value' => _persona_audience(),
   );
   // Is $conf['persona_audience'] defined in settings.php?
-  if (variable_get('persona_audience')) {
-    $requirement += array(
-      'severity' => REQUIREMENT_OK,
-    );
-  }
-  else {
-    $requirement['value'] .=  ' ' . t("(determined insecurely)");
+  if (!variable_get('persona_audience')) {
+    $requirements['persona_audience']['value'] .=  ' ' . t("(determined insecurely)");
     $security_url = 'https://developer.mozilla.org/en-US/docs/Persona/Security_Considerations';
-    $requirement += array(
+    $requirements['persona_audience'] += array(
       'severity' => REQUIREMENT_ERROR,
       'description' => t("\$conf['persona_audience'] must be defined in settings.php.<br />See !link.",
         array('!link' => l($security_url, $security_url, array('attributes' => array('target' => '_blank'))))),
     );
   }
-  return array('persona' => $requirement);
+  $requirements['persona_verifier'] = array(
+    'title' => t("Persona verifier"),
+    'value' => 'verifier.login.persona.org',
+  );
+  return $requirements;
 }
 
 /**
