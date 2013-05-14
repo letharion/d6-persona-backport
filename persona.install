@@ -79,6 +79,9 @@ function persona_update_7100(array &$sandbox) {
 }
 
 function _persona_update_7101_db() {
+  if (!module_exists('block')) {
+    return;
+  }
   // Configure block visibility.
   db_insert('block_role')
     ->fields(array('module', 'delta', 'rid'))
