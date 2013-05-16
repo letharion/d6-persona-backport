@@ -14,9 +14,25 @@ Drupal.behaviors.persona = {
       return;
     }
 
-    var requester = false;
-    var tabHasFocus = false;
+    var instanceId = Math.random();
     var changeEmail = false;
+
+    /**
+     * Stores instanceId in a session cookie.
+     */
+    function setInstanceId() {
+      document.cookie = "personaInstanceId=" + instanceId + "; path=" + settings.basePath;
+    }
+
+    /**
+     * Checks that instanceId matches the session cookie.
+     */
+    function checkInstanceId() {
+      var parts = document.cookie.split("personaInstanceId=");
+      if (parts.length == 2) {
+        return parts.pop().split(";").shift() == instanceId;
+      }
+    }
 
     /**
      * Generates a relative URL for the given Drupal path. Optionally adds
@@ -66,12 +82,10 @@ Drupal.behaviors.persona = {
       window.location = relativeUrl(settings.persona.currentPath);
     }
 
+    setInstanceId();
     // Determine when the current tab has the focus.
     $(window).focus(function () {
-      tabHasFocus = true;
-    });
-    $(window).blur(function () {
-      tabHasFocus = false;
+      setInstanceId();
     });
     // Switch off Persona when leaving the page to prevent it from issuing a
     // rouge onlogout if it hadn't finished initialising.
@@ -87,7 +101,7 @@ Drupal.behaviors.persona = {
     navigator.id.watch({
       loggedInUser: settings.persona.email,
       onlogin: function (assertion) {
-        if (requester || tabHasFocus) {
+        if (checkInstanceId()) {
           // Get the token synchronously if necessary.
           getToken(false);
           // Attempt to sign in to the site and then reload the page.
@@ -120,7 +134,7 @@ Drupal.behaviors.persona = {
         }
       },
       onlogout: function () {
-        if (requester || tabHasFocus) {
+        if (checkInstanceId()) {
           // Only sign out from the website if it is already signed in. This
           // prevents unnecessary sign out requests when verification fails.
           if (settings.persona.email) {
@@ -153,7 +167,6 @@ Drupal.behaviors.persona = {
     });
     $('.persona-sign-in, .persona-change-email').click(function (event) {
       changeEmail = $(this).hasClass('persona-change-email');
-      requester = true;
       // Request Persona sign in.
       navigator.id.request({
         siteName: settings.persona.siteName,
@@ -167,7 +180,6 @@ Drupal.behaviors.persona = {
     $('.persona-sign-out').click(function (event) {
       event.preventDefault();
       if (settings.persona.email) {
-        requester = true;
         navigator.id.logout();
       }
       else {
@@ -177,7 +189,6 @@ Drupal.behaviors.persona = {
     // Add compatibility with user switching.
     $('.persona-forget').click(function (event) {
       settings.persona.email = null;
-      requester = true;
       navigator.id.logout();
     });
   }
