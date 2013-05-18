@@ -68,7 +68,7 @@ function persona_init() {
       'content' => 'IE=edge,chrome=1',
     ),
   );
-  drupal_add_html_head($element, 'x_ua_compatible');
+  drupal_add_html_head($element, 'persona_x_ua_compatible');
   // Add JavaScript settings.
   $settings = array(
     // Tell Persona who is signed in.
