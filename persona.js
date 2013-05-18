@@ -164,6 +164,7 @@ Drupal.behaviors.persona = {
     // Attach the buttons.
     $('.persona-button').click(function (event) {
       $(this).blur();
+      setInstanceId();
     });
     $('.persona-sign-in, .persona-change-email').click(function (event) {
       changeEmail = $(this).hasClass('persona-change-email');
