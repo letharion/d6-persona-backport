@@ -96,16 +96,19 @@ function _persona_update_7101_db() {
   db_delete('block')
     ->condition('module', 'persona')
     ->execute();
-  db_insert('block')
-    ->fields(array(
-      'module' => 'persona',
-      'delta' => 'sign-in',
-      'theme' => variable_get('theme_default'),
-      'status' => 1,
-      'region' => 'header',
-      'pages' => '',
-    ))
-    ->execute();
+  $regions = system_region_list(variable_get('theme_default'), REGIONS_VISIBLE);
+  if (isset($regions['header'])) {
+    db_insert('block')
+      ->fields(array(
+        'module' => 'persona',
+        'delta' => 'sign-in',
+        'theme' => variable_get('theme_default'),
+        'status' => 1,
+        'region' => 'header',
+        'pages' => '',
+      ))
+      ->execute();
+  }
 }
 
 /**
