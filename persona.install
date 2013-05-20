@@ -95,6 +95,7 @@ function _persona_update_7101_db() {
   // Add Persona Sign In block to header region in default theme.
   db_delete('block')
     ->condition('module', 'persona')
+    ->condition('delta', 'buttons')
     ->execute();
   db_insert('block')
     ->fields(array(
