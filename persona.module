@@ -105,7 +105,7 @@ function persona_init() {
   }
   // Add the button CSS if necessary.
   if (variable_get('persona_button_style') == 'persona') {
-    drupal_add_css(drupal_get_path('module', 'persona') . '/css/persona.skin.css', array(
+    drupal_add_css(drupal_get_path('module', 'persona') . '/css/persona.theme.css', array(
       'every_page' => TRUE,
     ));
   }

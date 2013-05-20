@@ -103,7 +103,7 @@ function persona_admin_form(array $form, array &$form_state) {
     '#default_value' => variable_get('persona_privacy_link'),
     '#description' => "Link in the form of a local path or an absolute URL.",
   );
-  $form['#attached']['css'][] = drupal_get_path('module', 'persona') . '/css/persona.skin.css';
+  $form['#attached']['css'][] = drupal_get_path('module', 'persona') . '/css/persona.theme.css';
   // Turn it into a settings form. The page cache will be cleared automatically.
   $form = system_settings_form($form);
   // Make sure our submit handler is invoked.
