@@ -134,30 +134,30 @@ Drupal.behaviors.persona = {
         }
       },
       onlogout: function () {
-        // Only sign out from the website if it is already signed in. This
-        // prevents unnecessary sign out requests when verification fails.
-        if (settings.persona.email) {
-          $.ajax({
-            type: 'POST',
-            contentType: 'application/json',
-            url: relativeUrl('user/persona/sign-out'),
-            data: JSON.stringify({
-              token: settings.persona.token
-            }),
-            dataType: 'json',
-            complete: function (jqXHR, textStatus) {
-              if (checkInstanceId()) {
+        if (checkInstanceId()) {
+          // Only sign out from the website if it is already signed in. This
+          // prevents unnecessary sign out requests when verification fails.
+          if (settings.persona.email) {
+            $.ajax({
+              type: 'POST',
+              contentType: 'application/json',
+              url: relativeUrl('user/persona/sign-out'),
+              data: JSON.stringify({
+                token: settings.persona.token
+              }),
+              dataType: 'json',
+              complete: function (jqXHR, textStatus) {
                 // Redirect the current tab to the homepage.
                 window.location = settings.basePath;
               }
-              else {
-                reload();
-              }
-            }
-          });
+            });
+          }
+          else {
+            reload();
+          }
         }
         else {
-          reload();
+          window.setTimeout(reload, 1000);
         }
       }
     });
