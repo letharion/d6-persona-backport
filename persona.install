@@ -83,6 +83,9 @@ function _persona_update_7101_db() {
     return;
   }
   // Configure block visibility.
+  db_delete('block_role')
+    ->condition('module', 'persona')
+    ->execute();
   db_insert('block_role')
     ->fields(array('module', 'delta', 'rid'))
     ->values(array('persona', 'sign-in', DRUPAL_ANONYMOUS_RID))
@@ -90,6 +93,9 @@ function _persona_update_7101_db() {
     ->values(array('persona', 'sign-out', DRUPAL_AUTHENTICATED_RID))
     ->execute();
   // Add Persona Sign In block to header region in default theme.
+  db_delete('block')
+    ->condition('module', 'persona')
+    ->execute();
   db_insert('block')
     ->fields(array(
       'module' => 'persona',
