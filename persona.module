@@ -326,6 +326,7 @@ function persona_sign_in() {
     drupal_set_message(t("Sorry, there was a problem signing you in with Persona."), 'error');
     return;
   }
+  $transaction = db_transaction();
   // Is the browser already signed in as this user.
   if (user_is_logged_in() && ($user->mail == $email)) {
     $_SESSION['persona_sign_in'] = TRUE;
@@ -389,6 +390,7 @@ function persona_change_email() {
     drupal_set_message(t("Sorry, there was a problem changing your email address with Persona."), 'error');
     return;
   }
+  $transaction = db_transaction();
   // Check if the user is using this email address in another account.
   if ($user->mail != $email && ($account = user_load_by_mail($email))) {
     // Sign into existing account as it is all we can do...
