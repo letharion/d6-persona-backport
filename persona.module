@@ -233,6 +233,12 @@ function _persona_audience() {
 /**
  * Verifies a Persona assertion and determines the email address.
  *
+ * @param string $assertion
+ *   Verifier identity assertion.
+ *
+ * @throws Exception
+ *   Exception is thrown if an invalid response is received from the verifier.
+ *
  * @return string
  *   Email address that the user has signed in with.
  */
@@ -261,11 +267,12 @@ function persona_verify($assertion) {
   // HTTP status should be 200, and verification status should be 'okay'.
   // We must also check that an email has been returned.
   if (($result['code'] != 200) || ($response['status'] != 'okay') || !isset($response['email'])) {
+    $response_str = var_export($response, TRUE);
     watchdog('persona', "Bad response: @response; HTTP status: @code", array(
-      '@response' => var_export($response, TRUE),
+      '@response' => $response_str,
       '@code' => $result['code'],
     ), WATCHDOG_ERROR);
-    throw new Exception();
+    throw new Exception("Bad response: $response_str.");
   }
   // Return email address obtained from assertion.
   return $response['email'];
