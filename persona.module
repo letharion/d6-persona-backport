@@ -402,7 +402,7 @@ function persona_change_email() {
   if ($user->mail != $email && ($account = user_load_by_mail($email))) {
     // Sign into existing account as it is all we can do...
     if (_persona_existing_account_sign_in($account)) {
-      drupal_set_message(t("You are already using %email for another account, which you have now been signed into.", 
+      drupal_set_message(t("You are already using %email for another account, which you have now been signed into.",
         array('%email' => $user->mail)), 'error');
     }
   }
