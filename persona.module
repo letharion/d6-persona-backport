@@ -529,7 +529,7 @@ function persona_block_info() {
 /**
  * Implements hook_block_view().
  */
-function persona_block_view($delta) {
+function persona_block_view($delta = '') {
   return array('content' => array('#theme' => 'persona_button', '#type' => $delta));
 }
 
