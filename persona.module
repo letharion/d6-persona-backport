@@ -266,8 +266,7 @@ function persona_verify($assertion) {
   // Get response variables.
   $response = drupal_json_decode($result['data']);
   // HTTP status should be 200, and verification status should be 'okay'.
-  // We must also check that an email has been returned.
-  if (($result['code'] != 200) || ($response['status'] != 'okay') || !isset($response['email'])) {
+  if (($result['code'] != 200) || ($response['status'] != 'okay')) {
     $response_str = var_export($response, TRUE);
     watchdog('persona', "Bad response: @response; HTTP status: @code", array(
       '@response' => $response_str,
