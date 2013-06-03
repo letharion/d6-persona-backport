@@ -272,7 +272,7 @@ function persona_verify($assertion) {
       '@response' => $response_str,
       '@code' => $result['code'],
     ), WATCHDOG_ERROR);
-    throw new Exception("Bad response: $response_str.");
+    throw new Exception("Bad response: " . $response_str, $result['code']);
   }
   // Return email address obtained from assertion.
   return $response['email'];
