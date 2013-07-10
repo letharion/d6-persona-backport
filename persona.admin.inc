@@ -86,22 +86,27 @@ function persona_admin_form(array $form, array &$form_state) {
     'button' => persona_admin_form_button_preview(),
   );
   // Legal Document settings.
-  $form['legal_docs'] = array(
+  $form['sign_in_dialog'] = array(
     '#type' => 'fieldset',
-    '#title' => t("Legal Documents"),
-    '#description' => t("If links to <b>both</b> of these documents are provided, they will appear on the Persona sign in dialog."),
+    '#title' => t("Sign in dialog"),
   );
-  $form['legal_docs']['persona_terms_link'] = array(
+  $form['sign_in_dialog']['persona_logo'] = array(
+    '#type' => 'textfield',
+    '#title' => t("Site Logo"),
+    '#default_value' => variable_get('persona_logo'),
+    '#description' => t("Must be an absolute path, for example <em>/sites/default/files/logo.svg</em> .<br />Defaults to the theme's logo setting.<br />Only appears when the site is delivered over HTTPS."),
+  );
+  $form['sign_in_dialog']['persona_terms_link'] = array(
     '#type' => 'textfield',
     '#title' => t("Terms Of Service"),
     '#default_value' => variable_get('persona_terms_link'),
-    '#description' => "Link in the form of a local path or an absolute URL.",
+    '#description' => t("Web page link in the form of a local path or an absolute URL.<br />Only appears when Privacy Policy is also provided."),
   );
-  $form['legal_docs']['persona_privacy_link'] = array(
+  $form['sign_in_dialog']['persona_privacy_link'] = array(
     '#type' => 'textfield',
     '#title' => t("Privacy Policy"),
     '#default_value' => variable_get('persona_privacy_link'),
-    '#description' => "Link in the form of a local path or an absolute URL.",
+    '#description' => t("Web page link in the form of a local path or an absolute URL.<br />Only appears when Terms Of Service is also provided."),
   );
   $form['#attached']['css'][] = drupal_get_path('module', 'persona') . '/css/persona.theme.css';
   // Turn it into a settings form. The page cache will be cleared automatically.
