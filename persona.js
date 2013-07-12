@@ -192,6 +192,8 @@ Drupal.behaviors.persona = {
         navigator.id.logout();
       }
       else {
+        // A sign out button supplied by this module may be used when not signed
+        // in with Persona.
         window.location = relativeUrl('user/logout');
       }
     });
