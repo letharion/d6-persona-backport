@@ -16,6 +16,7 @@ Drupal.behaviors.persona = {
 
     var instanceId = Math.random();
     var changeEmail = false;
+    var actionedSignOut = false;
 
     /**
      * Stores instanceId in a session cookie.
@@ -147,8 +148,14 @@ Drupal.behaviors.persona = {
               }),
               dataType: 'json',
               complete: function (jqXHR, textStatus) {
-                // Redirect the current tab to the homepage.
-                window.location = settings.basePath;
+                // Redirect the current tab to the homepage only if sign out
+                // button was clicked. This avoids breaking the back button.
+                if (actionedSignOut) {
+                  window.location = settings.basePath;
+                }
+                else {
+                  reload();
+                }
               }
             });
           }
@@ -181,6 +188,7 @@ Drupal.behaviors.persona = {
     $('.persona-sign-out').click(function (event) {
       event.preventDefault();
       if (settings.persona.email) {
+        actionedSignOut = true;
         navigator.id.logout();
       }
       else {
