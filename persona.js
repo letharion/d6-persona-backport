@@ -169,11 +169,12 @@ Drupal.behaviors.persona = {
       }
     });
     // Attach the buttons.
-    $('.persona-button').click(function (event) {
+    $('.persona-styled').click(function (event) {
       $(this).blur();
-      setInstanceId();
     });
     $('.persona-sign-in, .persona-change-email').click(function (event) {
+      event.preventDefault();
+      setInstanceId();
       changeEmail = $(this).hasClass('persona-change-email');
       // Request Persona sign in.
       navigator.id.request({
@@ -187,6 +188,7 @@ Drupal.behaviors.persona = {
     });
     $('.persona-sign-out').click(function (event) {
       event.preventDefault();
+      setInstanceId();
       if (settings.persona.email) {
         actionedSignOut = true;
         navigator.id.logout();

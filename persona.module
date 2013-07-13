@@ -505,7 +505,7 @@ function theme_persona_button(array $variables) {
   }
   $attributes = drupal_array_merge_deep($variables['attributes'], array(
     'type' => 'button',
-    'class' => array('persona-button', 'persona-' . $variables['type']),
+    'class' => array('persona-' . $variables['type']),
   ));
   switch ($variables['style'] ?: variable_get('persona_button_style')) {
     case 'form':
@@ -612,21 +612,26 @@ function persona_user_view($account) {
  * Implements hook_preprocess_HOOK().
  */
 function persona_preprocess_link(array &$variables) {
-  if (!isset($_SESSION['persona_sign_in'])) {
-    return;
-  }
   // Fix bugs in other modules not declaring class as an array.
   // @see http://drupal.org/node/1978222
   if (isset($variables['options']['attributes']['class']) && is_string($variables['options']['attributes']['class'])) {
     $variables['options']['attributes']['class'] = array($variables['options']['attributes']['class']);
   }
-  // Make sure Persona handles all sign out links.
-  if ($variables['path'] == 'user/logout') {
-    $variables['options']['attributes']['class'][] = 'persona-sign-out';
+  if (variable_get('persona_takeover')) {
+    // Make sure Persona handles all sign in links.
+    if (($variables['path'] == 'user/login') || ($variables['path'] == 'user/register')) {
+      $variables['options']['attributes']['class'][] = 'persona-sign-in';
+    }
   }
-  // Add compatibility with user switching.
-  if ((strpos($variables['path'], 'devel/switch/') === 0) || (strpos($variables['path'], 'masquerade/switch/') === 0)) {
-    $variables['options']['attributes']['class'][] = 'persona-forget';
+  if (isset($_SESSION['persona_sign_in'])) {
+    // Make sure Persona handles all sign out links.
+    if ($variables['path'] == 'user/logout') {
+      $variables['options']['attributes']['class'][] = 'persona-sign-out';
+    }
+    // Add compatibility with user switching.
+    if ((strpos($variables['path'], 'devel/switch/') === 0) || (strpos($variables['path'], 'masquerade/switch/') === 0)) {
+      $variables['options']['attributes']['class'][] = 'persona-forget';
+    }
   }
 }
 
