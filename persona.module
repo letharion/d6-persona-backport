@@ -11,8 +11,6 @@
  *   XSRF token.
  */
 function persona_xsrf_token() {
-  // Make sure we have a session.
-  drupal_session_start();
   if (!isset($_SESSION['persona_xsrf_token'])) {
     $_SESSION['persona_xsrf_token'] = drupal_get_token('persona-xsrf');
   }
@@ -45,10 +43,8 @@ function persona_add_js_shiv($every_page = TRUE) {
   // implement navigator.id natively (currently all of them).
   // @see https://developer.mozilla.org/en-US/docs/DOM/navigator.id
   // @see http://drupal.org/node/865536
-  drupal_add_js('https://login.persona.org/include.js', array(
-    'group' => JS_LIBRARY,
-    'every_page' => $every_page,
-  ));
+  $path = drupal_get_path('module', 'persona');
+  drupal_add_js($path . '/js/mozilla-persona.js', 'module');
 }
 
 /**
@@ -56,29 +52,22 @@ function persona_add_js_shiv($every_page = TRUE) {
  */
 function persona_init() {
   global $user, $is_https, $base_secure_url;
+
   // Send X-UA-Compatible HTTP header to force IE to use the most recent
-  // rendering engine or use Chrome's frame rendering engine if available. It is
-  // not possible to use drupal_add_http_header() as Drupal 7 does not store
-  // HTTP headers in the page cache.
+  // rendering engine or use Chrome's frame rendering engine if available.
   // @see https://developer.mozilla.org/en-US/docs/Persona/Browser_compatibility
-  $element = array(
-    '#tag' => 'meta',
-    '#attributes' => array(
-      'http-equiv' => 'X-UA-Compatible',
-      'content' => 'IE=edge,chrome=1',
-    ),
-  );
-  drupal_add_html_head($element, 'persona_x_ua_compatible');
+  drupal_set_html_head('<meta http-equiv = "X-UA-Compatible" content = "IE=edge,chrome=">');
+
   // Add JavaScript settings.
   $settings = array(
     // Tell Persona who is signed in.
     'email' => (isset($_SESSION['persona_sign_in'])) ? $user->mail : NULL,
     // Add site name to display on Mozilla Persona dialog.
-    'siteName' => variable_get('site_name'),
+    'siteName' => variable_get('site_name', NULL),
     // Add some settings that core doesn't provide.
     // @see http://drupal.org/node/1691394
-    'cleanUrls' => variable_get('clean_url'),
-    'currentPath' => (current_path() == variable_get('site_frontpage', 'node')) ? '' : current_path(),
+    'cleanUrls' => variable_get('clean_url', FALSE),
+    'currentPath' => ($_GET['q'] === variable_get('site_frontpage', 'node')) ? '' : $_GET['q'],
   );
   // Don't add the XSRF token if the user is not signed in as the page may be
   // cached. This also avoids creating a session.
@@ -86,7 +75,7 @@ function persona_init() {
     $settings['token'] = persona_xsrf_token();
   }
   // Add the legal documents if they are both provided.
-  if ((variable_get('persona_terms_link')) && (variable_get('persona_privacy_link'))) {
+  if ((variable_get('persona_terms_link', NULL)) && (variable_get('persona_privacy_link', NULL))) {
     $settings += array(
       'termsOfService' => url(variable_get('persona_terms_link')),
       'privacyPolicy' => url(variable_get('persona_privacy_link')),
@@ -105,15 +94,16 @@ function persona_init() {
   }
   drupal_add_js(array('persona' => $settings), 'setting');
   // Add the JavaScript shiv.
-  if (!variable_get('persona_improve_frontend') || user_is_logged_in()) {
+  if (!variable_get('persona_improve_frontend', NULL) || user_is_logged_in()) {
     persona_add_js_shiv();
   }
   // Add the button CSS if necessary.
-  if (variable_get('persona_button_style') == 'persona') {
-    drupal_add_css(drupal_get_path('module', 'persona') . '/css/persona.theme.css', array(
-      'every_page' => TRUE,
-    ));
+  if (variable_get('persona_button_style', NULL) === 'persona') {
+    drupal_add_css(drupal_get_path('module', 'persona') . '/css/persona.theme.css', 'module', 'screen');
   }
+
+  $path = drupal_get_path('module', 'persona');
+  drupal_add_js($path . '/js/persona.js', 'module');
 }
 
 /**
@@ -160,7 +150,7 @@ function persona_menu() {
  * Implements hook_menu_alter().
  */
 function persona_menu_alter(array &$items) {
-  if (variable_get('persona_takeover')) {
+  if (variable_get('persona_takeover', NULL)) {
     unset($items['user/register']);
     unset($items['user/login']);
     unset($items['user/password']);
@@ -178,11 +168,9 @@ function persona_menu_alter(array &$items) {
  */
 function _persona_username_exists($name) {
   // Search for a user entity with the supplied name.
-  $query = new EntityFieldQuery;
-  return (bool) $query->entityCondition('entity_type', 'user')
-    ->propertyCondition('name', $name)
-    ->count()
-    ->execute();
+  db_query("SELECT uid FROM {users} WHERE name = '%s'", $name);
+
+  return (bool) db_affected_rows();
 }
 
 /**
@@ -340,7 +328,7 @@ function persona_sign_in() {
   }
   $transaction = db_transaction();
   // Is the browser already signed in as this user.
-  if (user_is_logged_in() && ($user->mail == $email)) {
+  if (user_is_logged_in() && ($user->mail === $email)) {
     $_SESSION['persona_sign_in'] = TRUE;
     drupal_add_http_header('Status', '204 No Content');
   }
@@ -355,7 +343,7 @@ function persona_sign_in() {
       'name' => _persona_extract_username($email),
       'mail' => $email,
       'access' => REQUEST_TIME,
-      'status' => $user_register == USER_REGISTER_VISITORS,
+      'status' => $user_register === USER_REGISTER_VISITORS,
       'init' => $email,
     );
     $account = user_save(drupal_anonymous_user(), $fields);
@@ -484,7 +472,7 @@ function persona_theme() {
  */
 function theme_persona_button(array $variables) {
   // Make sure the JavaScript shiv is added.
-  if (variable_get('persona_improve_frontend') && !user_is_logged_in()) {
+  if (variable_get('persona_improve_frontend', NULL) && !user_is_logged_in()) {
     persona_add_js_shiv(FALSE);
   }
   // Generate HTML.
@@ -503,17 +491,24 @@ function theme_persona_button(array $variables) {
       $text = t("Sign out");
       break;
   }
-  $attributes = drupal_array_merge_deep($variables['attributes'], array(
+
+
+  $attributes = array(
     'type' => 'button',
-    'class' => array('persona-' . $variables['type']),
-  ));
-  switch ($variables['style'] ?: variable_get('persona_button_style')) {
+    'class' => 'persona-' . $variables['type'],
+  );
+
+  if(isset($variables['#attributes'])) {
+    $attributes = drupal_array_merge_deep($variables['#attributes'], $attributes);
+  }
+
+  switch ($variables['style'] ?: variable_get('persona_button_style', NULL)) {
     case 'form':
-      $attributes['class'][] = 'form-submit';
+      $attributes['class'] = ' form-submit';
       $attributes['value'] = $text;
       return '<input' . drupal_attributes($attributes) . ' />';
     case 'persona':
-      $attributes['class'][] = 'persona-styled';
+      $attributes['class'] = ' persona-styled';
     case 'button':
       return '<button' . drupal_attributes($attributes) . '>' . $text . '</button>';
   }
@@ -547,7 +542,7 @@ function persona_block_view_alter(&$data, $block) {
   if (!is_array($data)) {
     return;
   }
-  if (variable_get('persona_takeover') && $block->module == 'user' && $block->delta == 'login') {
+  if (variable_get('persona_takeover') && $block->module === 'user' && $block->delta === 'login') {
     $data['content'] = array();
   }
 }
@@ -560,7 +555,7 @@ function persona_form_user_profile_form_alter(array &$form, array &$form_state, 
   // If the user is signed in with Persona then make sure they can't change
   // their own email, or Persona will try to make a new account with the old
   // email.
-  if (($form['#user']->uid == $user->uid) && isset($_SESSION['persona_sign_in'])) {
+  if (($form['#user']->uid === $user->uid) && isset($_SESSION['persona_sign_in'])) {
     $form['account']['mail']['#type'] = 'value';
     $form['account']['mail']['#value'] = $form['account']['mail']['#default_value'];
   }
@@ -573,14 +568,14 @@ function persona_form_user_profile_form_alter(array &$form, array &$form_state, 
 /**
  * Implements hook_form_FORM_ID_alter().
  */
-function persona_form_user_login_alter(array &$form, array &$form_state, $form_id) {
+function persona_form_user_login_alter(array &$form, array &$form_state) {
   // Add Persona sign in button to standard sign in page.
   $form['persona'] = array(
     '#theme' => 'persona_button',
     '#weight' => -1,
   );
   // Remove standard sign in form if Persona is taking over completely.
-  if (variable_get('persona_takeover')) {
+  if (variable_get('persona_takeover', NULL)) {
     unset($form['name']);
     unset($form['pass']);
     unset($form['actions']);
@@ -603,7 +598,7 @@ function persona_user_view($account) {
     '#markup' => check_plain($account->mail),
   );
   // If displaying the signed in user add the Change Email button.
-  if ($account->uid == $user->uid) {
+  if ($account->uid === $user->uid) {
     $account->content['account']['email']['#suffix'] = theme('persona_button', array('type' => 'change-email'));
   }
 }
@@ -617,15 +612,15 @@ function persona_preprocess_link(array &$variables) {
   if (isset($variables['options']['attributes']['class']) && is_string($variables['options']['attributes']['class'])) {
     $variables['options']['attributes']['class'] = array($variables['options']['attributes']['class']);
   }
-  if (variable_get('persona_takeover')) {
+  if (variable_get('persona_takeover', NULL)) {
     // Make sure Persona handles all sign in links.
-    if (($variables['path'] == 'user/login') || ($variables['path'] == 'user/register')) {
+    if (($variables['path'] === 'user/login') || ($variables['path'] === 'user/register')) {
       $variables['options']['attributes']['class'][] = 'persona-sign-in';
     }
   }
   if (isset($_SESSION['persona_sign_in'])) {
     // Make sure Persona handles all sign out links.
-    if ($variables['path'] == 'user/logout') {
+    if ($variables['path'] === 'user/logout') {
       $variables['options']['attributes']['class'][] = 'persona-sign-out';
     }
     // Add compatibility with user switching.
@@ -641,4 +636,40 @@ function persona_preprocess_link(array &$variables) {
 function persona_user_logout() {
   // Add compatibility with user switching.
   unset($_SESSION['persona_sign_in']);
+}
+
+/**
+ * Straight copy from D7 to made backporting simpler.
+ */
+function drupal_array_merge_deep() {
+  $args = func_get_args();
+  return drupal_array_merge_deep_array($args);
+}
+
+/**
+ * Straight copy from D7 to made backporting simpler.
+ */
+function drupal_array_merge_deep_array($arrays) {
+  $result = array();
+
+  foreach ($arrays as $array) {
+    foreach ($array as $key => $value) {
+      // Renumber integer keys as array_merge_recursive() does. Note that PHP
+      // automatically converts array keys that are integer strings (e.g., '1')
+      // to integers.
+      if (is_integer($key)) {
+        $result[] = $value;
+      }
+      // Recurse when both values are arrays.
+      elseif (isset($result[$key]) && is_array($result[$key]) && is_array($value)) {
+        $result[$key] = drupal_array_merge_deep_array(array($result[$key], $value));
+      }
+      // Otherwise, use the latter value, overriding any previous value.
+      else {
+        $result[$key] = $value;
+      }
+    }
+  }
+
+  return $result;
 }
